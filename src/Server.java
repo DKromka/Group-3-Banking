@@ -20,6 +20,7 @@ public class Server {
 		Accounts = new HashMap<String,BankAccount>();
 		LoadUsers();
 	}
+	
 	public static void main(String[] args) {
 		ServerSocket server= null;
 		try {
@@ -60,8 +61,8 @@ public class Server {
 		private ObjectOutputStream out;
 		private ObjectInputStream in;
 		private User currClient;
-		private boolean loggedIN;
-		private boolean Teller;
+		private boolean loggedIN, Teller;
+		private BankAccount currAccount;
 		private Server parent;
 		//Constructor
 		public ClientHandler(Socket socket)  throws IOException, ClassNotFoundException
@@ -102,6 +103,8 @@ public class Server {
 									break;
 								case WITHDRAW:
 									handleWithdraw();
+									break;
+								case USER_INFO_REQ:
 									break;
 								// Add more cases for other message types
 								default:
@@ -196,20 +199,38 @@ public class Server {
 		}
 		
 		void handleDeposit() {
-			if(msg.getFunds() > 0) {
-				msg = new Message(MessageType.DEPOSIT,"Funds have been Deopsited",0);
+			
+			currAccount = Accounts.get(msg.getData()); // grabs account from hash
+			
+			if(currAccount.hasUser(currClient.getName()) && currAccount != null) { //check if user has permission to access and if it exists
+				if(currAccount.deposit(msg.getFunds())) {
+					msg = new Message(MessageType.SUCCESS,"Funds have been Deopsited",0); //deposit successful
+				}
+				else {
+					msg = new Message(MessageType.FAIL,"Invalid Funds",0); //deposit is unsuccessful
+				}
 			}
 			else {
-				msg = new Message(MessageType.FAIL,"Invalid Funds",0);
+				msg = new Message(MessageType.FAIL,"Invalid Acount",0);
 			}
+
 		}
 		
 		void handleWithdraw() {
-			if(true) { // check if funds go below minimum;
-				msg = new Message(MessageType.WITHDRAW,"Funds Withdrawn",0);
+			
+			currAccount = Accounts.get(msg.getData()); //grabs account from hash
+			
+			float withdrawFunds;
+			if(currAccount.hasUser(currClient.getName()) && currAccount != null) { //check if user has permission to access and if it exists
+				if(currAccount.withdraw(msg.getFunds())) {
+					msg = new Message(MessageType.SUCCESS,"Funds Withdrawn",0); //withdraw is successful
+				}
+				else{
+					msg = new Message(MessageType.FAIL,"Insufficient Funds",0); //withdraw is unsuccessful
+				}
 			}
-			else { //not enough funds
-				msg = new Message(MessageType.FAIL,"Insufficient Funds",0);
+			else {
+				msg = new Message(MessageType.FAIL,"Invalid Acount",0);
 			}
 		}
 	}
