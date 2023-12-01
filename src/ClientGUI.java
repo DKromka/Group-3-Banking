@@ -1,6 +1,8 @@
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -25,7 +27,7 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 	private String user;
 	
 	@SuppressWarnings("resource")
-	public void run() throws NumberFormatException, UnknownHostException, IOException {
+	public void run() throws NumberFormatException, UnknownHostException, IOException, HeadlessException, ClassNotFoundException {
 		
 		Socket socket;
 		inObj = null;
