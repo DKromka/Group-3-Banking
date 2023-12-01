@@ -93,7 +93,7 @@ public class Server {
 							
 						msg = (Message)in.readObject();	//get object from network
 							
-						if(Teller) {
+						if(currClient.isTeller()) {
 							switch (msg.getType()) {
 								case LOGOUT:
 									handleLogout();
@@ -103,6 +103,12 @@ public class Server {
 									break;
 								case WITHDRAW:
 									handleWithdraw();
+									break;
+								case ADD_USER:
+									handleAddUser();
+									break;
+								case REMOVE_USER:
+									handleRemoveUser();
 									break;
 								case USER_INFO_REQ:
 									handleAccountInfoReq();
@@ -251,6 +257,14 @@ public class Server {
 				msg = new Message(MessageType.FAIL,"Invalid Acount",0);
 			}
 			out.writeObject(msg);
+		}
+		
+		void handleAddUser(){
+			
+		}
+		
+		void handleRemoveUser() {
+			
 		}
 	}
 	
