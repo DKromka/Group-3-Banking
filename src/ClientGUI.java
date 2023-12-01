@@ -33,6 +33,8 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 		inObj = null;
 		outObj = null;
 		Scanner input = new Scanner(System.in);
+						
+		JFrame frame = new JFrame();
 		
 		try {
 			System.out.println("IP?");
@@ -46,9 +48,8 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 		catch (Exception e) {
 			System.out.println("lol. lmao"); // obviously a temporary hack
 		}
-		
-		JFrame frame = new JFrame();
-		
+
+
 		String pass;
 		
 		do {
@@ -122,8 +123,6 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 		result.add(new String[] {"scagonga", "57", "FROZEN"});
 		return result;
 	}
-	
-	
 	
 	public void valueChanged(ListSelectionEvent event) {
 		if (!event.getValueIsAdjusting() && list.getSelectedIndex() != -1) {
@@ -202,6 +201,8 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 		}
 		
 	}
+	
+	
 	
 	private void logout() {
 		

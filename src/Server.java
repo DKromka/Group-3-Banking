@@ -85,6 +85,7 @@ public class Server {
 		{
 			try {
 				if(!loggedIN) {
+					
 					verifyLogin();
 					
 					String inputStr;
@@ -171,21 +172,27 @@ public class Server {
 				try {
 					msg = (Message)in.readObject();
 					if(msg.type == MessageType.LOGIN_REQ) {
+												
+						input = msg.getData().split("\n",2); //parse data string from message object
 						
-						input = msg.getData().split("\n"); //parse data string from message object
-						
+						System.out.println(input[0]);
 						//store username and password temporarily
-						username = input[0];
-						password = input[1];
+						username = ""; //input[0];
+						password = ""; //input[1];
 						
 						currClient = Users.get(input[0]);
 						
-						if(currClient != null && currClient.verify(password)) {
-							loggedIN = true;
-							msg = new Message(MessageType.SUCCESS,"Login Successful",0);
+						if(currClient != null) {
+							if(currClient.verify(password)) {
+								loggedIN = true;
+								msg = new Message(MessageType.SUCCESS,"Login Successful",0);
+							}
+							else {
+								msg = new Message(MessageType.FAIL,"Login Failed",0);
+							}
 						}
 						else {
-							msg = new Message(MessageType.FAIL,"Login Failed",0);
+							msg = new Message(MessageType.FAIL,"User Does NOT Exist",0);
 						}
 					}
 					else {
