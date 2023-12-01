@@ -94,7 +94,7 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 	
 	private static boolean login(ObjectOutputStream outObj, ObjectInputStream inObj, String user, String pass) throws IOException, ClassNotFoundException {
 		
-		Message message = new Message(MessageType.LOGIN_REQ, user + "\n" + pass, 0);
+		Message message = new Message(MessageType.LOGIN_REQ, user + "\n" + pass);
 		
 		outObj.writeObject(message);
 		outObj.flush();
@@ -206,7 +206,7 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 	
 	private void logout() throws IOException {
 
-		Message message = new Message(MessageType.LOGOUT, "", 0);
+		Message message = new Message(MessageType.LOGOUT, "");
 				
 		outObj.writeObject(message);
 		outObj.flush();
