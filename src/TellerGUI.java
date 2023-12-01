@@ -27,14 +27,38 @@ public class TellerGUI implements ActionListener {
 	private ObjectInputStream inObj;
 	private JFrame frame;
 	private JTable logTable;
+	private JScrollPane tablePane;
 	private JPanel buttonPane;
 	
-	private TableModel model = new AbstractTableModel() {
+	private class MyTableModel extends AbstractTableModel {
 		private static final long serialVersionUID = 1L;
-		public int getColumnCount() {return currLogs.size();}
-		public int getRowCount() {return 4;}
-		public Object getValueAt(int row, int col) {return currLogs.get(col)[row];}
-	};
+		public MyTableModel() {
+			int i = 0;
+			String[] curr = null;
+			for (var it = currLogs.iterator(); it.hasNext(); i++) {
+				curr = it.next();
+				for (int j = 0; j < 4; j++) {
+					setValueAt(curr[j], i, j);
+				}
+			}
+		}
+		public String getColumnName(int col) {
+			switch (col) {
+			case 0:
+				return "User";
+			case 1:
+				return "Action";
+			case 2:
+				return "Amount";
+			default:
+				return "Date";
+			}
+		}
+		public int getColumnCount() {return 4;}
+		public int getRowCount() {return currLogs.size();}
+		public Object getValueAt(int row, int col) {return currLogs.get(row)[col];}
+		private void printDebugData() {System.out.println("ltg");}
+	}
 	
 	public void run() throws NumberFormatException, UnknownHostException, IOException {
 			Socket socket;
@@ -65,10 +89,11 @@ public class TellerGUI implements ActionListener {
 			}
 			while (!login(user, pass));
 			
+			currLogs = new Vector<String[]>();
 			
-			
-			logTable = new JTable(model);
-			JScrollPane tablePane = new JScrollPane(logTable);
+			logTable = new JTable(new MyTableModel());
+			logTable.setOpaque(true);
+			tablePane = new JScrollPane(logTable);
 			buttonPane = new JPanel();	
 			
 			JButton button1 = new JButton("Deposit"); button1.setActionCommand("deposit"); button1.addActionListener(this);
@@ -84,35 +109,33 @@ public class TellerGUI implements ActionListener {
 			
 			JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tablePane, buttonPane);
 			
-			frame.add(splitPane);
+			frame.getContentPane().add(splitPane);
 			frame.pack();
 			
-			boolean running = true;
-			
-			while (running) {
-				frame.setVisible(false);
-				int ans = JOptionPane.showOptionDialog(null, "What do?", "Teller", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, new String[] {"Select Account", "Make Account", "Log Out"}, "Select Account");;
-				switch (ans) {
-				case 0:
-					currAccount = JOptionPane.showInputDialog(null, "Which account?");
-					if (!getLogs()) {
-						JOptionPane.showMessageDialog(null, "Invalid account name", "Error", JOptionPane.ERROR_MESSAGE);
-						break;
-					}
-					displayAccountUI();
-				case 1:
-					String newAcc = JOptionPane.showInputDialog(null, "What to name the account?");
-					if (!createAccount(newAcc)) {
-						JOptionPane.showMessageDialog(null, "Create operation failed", "Error", JOptionPane.ERROR_MESSAGE);
-						break;
-					}
-				case 2:
-					logout();
-					running = false;
-				}
-					
+			displayMainUI();
+		}
+
+	private void displayMainUI() {
+		frame.setVisible(false);
+		int ans = JOptionPane.showOptionDialog(null, "What do?", "Teller", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, new String[] {"Select Account", "Make Account", "Log Out"}, "Select Account");;
+		switch (ans) {
+		case 0:
+			currAccount = JOptionPane.showInputDialog(frame, "Which account?");
+			if (!getLogs()) {
+				JOptionPane.showMessageDialog(null, "Invalid account name", "Error", JOptionPane.ERROR_MESSAGE);
+				break;
 			}
-			
+			displayAccountUI();
+			break;
+		case 1:
+			String newAcc = JOptionPane.showInputDialog(frame, "What to name the account?");
+			if (!createAccount(newAcc)) {
+				JOptionPane.showMessageDialog(null, "Create operation failed", "Error", JOptionPane.ERROR_MESSAGE);
+			}
+			break;
+		case 2:
+			logout();
+		}	
 	}
 	
 	private void displayAccountUI() {
@@ -183,6 +206,57 @@ public class TellerGUI implements ActionListener {
 	}
 	
 	public void actionPerformed(ActionEvent event) {
-		
+		switch (event.getActionCommand()) {
+		case "deposit":
+			float depositAmount;
+			try {
+				depositAmount = Float.parseFloat(JOptionPane.showInputDialog("How much to deposit to " + currAccount));
+			}
+			catch (Exception e) {
+				JOptionPane.showMessageDialog(null, "Invalid amount", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			deposit(depositAmount);
+			refresh();
+			return;
+		case "withdraw":
+			float withdrawAmount;
+			try {
+				withdrawAmount = Float.parseFloat(JOptionPane.showInputDialog("How much to withdraw from " + currAccount));
+			}
+			catch (Exception e) {
+				JOptionPane.showMessageDialog(null, "Invalid amount", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			withdraw(withdrawAmount);
+			refresh();
+			return;
+		case "refresh":
+			refresh();
+			return;
+		case "return":
+			displayMainUI();
+			return;
+		case "status":
+			changeStatus((String) JOptionPane.showInputDialog(frame, "Which status?", currAccount, JOptionPane.PLAIN_MESSAGE, null, new String[] {"Good","Freeze","Inactive"}, "Good"));
+			return;
+		case "add":
+			if (!addUser(JOptionPane.showInputDialog("Which user to add?"))) {
+				JOptionPane.showMessageDialog(null, "That user is already on this account", "Error", JOptionPane.ERROR_MESSAGE);
+			}
+			return;
+		case "remove":
+			if (!removeUser(JOptionPane.showInputDialog("Which user to remove?"))) {
+				JOptionPane.showMessageDialog(null, "That user is not on this account", "Error", JOptionPane.ERROR_MESSAGE);
+			}
+			return;
+		}
+	}
+	
+	public void refresh() {
+		getLogs();
+		tablePane.remove(logTable);
+		logTable = new JTable(new MyTableModel());
+		tablePane.add(logTable);
 	}
 }
