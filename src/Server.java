@@ -105,6 +105,7 @@ public class Server {
 									handleWithdraw();
 									break;
 								case USER_INFO_REQ:
+									handleAccountInfoReq();
 									break;
 								// Add more cases for other message types
 								default:
@@ -123,6 +124,9 @@ public class Server {
 									break;
 								case WITHDRAW:
 									handleWithdraw();
+									break;
+								case USER_INFO_REQ:
+									handleAccountInfoReq();
 									break;
 								// Add more cases for other message types
 								default:
@@ -198,7 +202,7 @@ public class Server {
 			loggedIN = false;
 		}
 		
-		void handleDeposit() {
+		void handleDeposit() throws IOException {
 			
 			currAccount = Accounts.get(msg.getData()); // grabs account from hash
 			
@@ -213,10 +217,11 @@ public class Server {
 			else {
 				msg = new Message(MessageType.FAIL,"Invalid Acount",0);
 			}
-
+			
+			out.writeObject(msg);
 		}
 		
-		void handleWithdraw() {
+		void handleWithdraw() throws IOException {
 			
 			currAccount = Accounts.get(msg.getData()); //grabs account from hash
 			
@@ -232,6 +237,20 @@ public class Server {
 			else {
 				msg = new Message(MessageType.FAIL,"Invalid Acount",0);
 			}
+			
+			out.writeObject(msg);
+		}
+		
+		void handleAccountInfoReq() throws IOException{
+			currAccount = Accounts.get(msg.getData()); //grabs account from hash
+			
+			if(currAccount.hasUser(currClient.getName()) && currAccount != null) { //check if user has permission to access and if it exists
+				msg = new Message(MessageType.ACCOUNT_INFO,currAccount.getName() + "\n" + currAccount.getStatus(),currAccount.getBalance());
+			}
+			else {
+				msg = new Message(MessageType.FAIL,"Invalid Acount",0);
+			}
+			out.writeObject(msg);
 		}
 	}
 	
