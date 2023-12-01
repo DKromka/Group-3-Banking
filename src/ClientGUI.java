@@ -91,14 +91,14 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 	
 	private static boolean login(ObjectOutputStream outObj, ObjectInputStream inObj, String user, String pass) throws IOException, ClassNotFoundException {
 		
-		Message message = new Message(0, MessageType.Login, user + pass, 0);
+		Message message = new Message(MessageType.LOGIN_REQ, user + pass, 0);
 		
 		outObj.writeObject(message);
 		outObj.flush();
 		
 		message = (Message) inObj.readObject();
 		
-		if (message.getType().equals(MessageType.Accepted)) {
+		if (message.getType().equals(MessageType.SUCCESS)) {
 			
 			return true;
 			
@@ -163,14 +163,14 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 	
 	private boolean deposit(String account, float amount) throws IOException, ClassNotFoundException {
 		
-		Message message = new Message(0, MessageType.Deposit, account, amount);
+		Message message = new Message(MessageType.DEPOSIT, account, amount);
 				
 		outObj.writeObject(message);
 		outObj.flush();
 		
 		message = (Message) inObj.readObject();
 		
-		if (message.getType().equals(MessageType.Accepted)) {
+		if (message.getType().equals(MessageType.SUCCESS)) {
 			
 			return true;
 			
@@ -183,14 +183,14 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 	
 	private boolean withdraw(String account, float amount) throws IOException, ClassNotFoundException {
 		
-		Message message = new Message(0, MessageType.Withdraw, account, amount);
+		Message message = new Message(MessageType.WITHDRAW, account, amount);
 				
 		outObj.writeObject(message);
 		outObj.flush();
 		
 		message = (Message) inObj.readObject();
 		
-		if (message.getType().equals(MessageType.Accepted)) {
+		if (message.getType().equals(MessageType.SUCCESS)) {
 			
 			return true;
 			
