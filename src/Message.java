@@ -18,6 +18,14 @@ public class Message implements Serializable {
 		
 	}
 	
+	public Message(MessageType type, String data){
+		ID++;
+		this.type = type;
+		this.data = data;
+		this.funds = 0;
+		
+	}
+	
 	//getters- get ID/Type/data/funds  (public)
 	public int getID() {
 		return this.ID;
