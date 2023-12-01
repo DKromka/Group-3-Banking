@@ -234,7 +234,7 @@ public class TellerGUI implements ActionListener {
 		case "refresh":
 			refresh();
 			return;
-		case "return":
+		case "Die":
 			displayMainUI();
 			return;
 		case "status":
