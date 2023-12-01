@@ -25,6 +25,8 @@ public class Client extends User{
 	private ObjectInputStream instream;
 	private Vector<String> accounts;
 	private static String name;
+	private static String status;
+	private static String funds;
 	private static String password;
 	private static boolean teller;
 	
@@ -48,18 +50,89 @@ public class Client extends User{
 			MessageType mt = MessageType.LOGIN_REQ;
 		    message = new Message(mt, "", 0);
 		    client.outstream.writeObject(message);
+            client.outstream.flush();
 		    
 		    //receive message server message
 		    message = (Message) client.instream.readObject();
-		    
+		    //save type of message that server sent
+		    MessageType messageBack = message.getType();
 		    //if type = success prompt the user with message
-		    if (message.getType().equals("SUCCESS")) {
-		    	//client connected to server
-				System.out.println("This is the Client Class");
-		    	
-		    }
 		    
-				    
+		    if (messageBack.equals("SUCCESS")) {
+		    	//client connected to server
+				System.out.println("Connected to server!");
+				
+		        Scanner scanner = new Scanner(System.in);
+
+				
+				  //infinite loop while user not logged off
+		        while (true) {
+		            System.out.print("Enter Action: \n"
+		            		+"1. Withdraw\n"
+		            		+ "2. Deposit\n"
+		            		+ "3. Check balance\n"
+		            		+ "4. Log out");
+
+		            String userInput = scanner.nextLine();
+		            
+		            
+		            //if user input 1 = withdraw request
+		            if (userInput.equalsIgnoreCase("1")) {
+		            	//send message to server based on action:
+			            mt = MessageType.WITHDRAW;
+			            int i = message.getID();
+			            float f = message.getFunds();
+			            String userID = Integer.toString(i);
+			            //message object contains: type, id of user, funds
+			            message = new Message(mt, userID , f);
+			            client.outstream.writeObject(message);
+			            client.outstream.flush();
+			            
+			            //if user input 2 = deposit request
+		            }else if (userInput.equalsIgnoreCase("2")) {
+			            mt = MessageType.DEPOSIT;
+			            int i = message.getID();
+			            float f = message.getFunds();
+			            String userID = Integer.toString(i);
+			            //message object contains: type, id of user, funds
+			            message = new Message(mt, userID, f);
+			            client.outstream.writeObject(message);
+			            client.outstream.flush();
+			            
+			            //if user input 3 = get account info
+		            }else if (userInput.equalsIgnoreCase("3")) {
+			            mt = MessageType.ACCOUNT_INFO;
+			            int i = message.getID();
+			            String userID = Integer.toString(i);
+			            float f = message.getFunds();
+			            //message object contains: type, id of user, funds
+						message = new Message(mt, userID , f);
+			            client.outstream.writeObject(message);
+			            client.outstream.flush();
+			            
+			            
+			            //if user input 4 = logout
+		            }else if (userInput.equalsIgnoreCase("4")) {
+			            mt = MessageType.LOGOUT;
+			            int i = message.getID();
+			            String userID = Integer.toString(i);
+			            float f = message.getFunds();
+			            //message object contains: type, id of user, funds
+			            message = new Message(mt, userID, 0);
+			            client.outstream.writeObject(message);
+			            client.outstream.flush();
+			            //read message back from server
+			            message = (Message) client.instream.readObject();
+			            
+	 		            //if successfully logged off from server, remove client
+		                  if (message.getType().equals("SUCCESS")) {
+		                        System.out.println("you have been logged off.\n\n Bye!");
+		                        client.socket.close();
+		                        break;
+		                   }
+		            }
+		        }
+		    }	    
 		}
 
  
@@ -69,18 +142,24 @@ public class Client extends User{
 
 	
 	public boolean addAccount(String id) {
-		//STUB: add a bank account to user with ID "id"
-		return false;
-
-		
+		//if account is already in, return false, else true
+		if (accounts.contains(id)) {
+			return false;
+		}
+			accounts.add(id); 
+			return true;
 	}
+		
 
 	public boolean removeAccount(String id) {
-		//STUB: remove an account from user with ID "id"
-		return false;
-
-		
+		//if removing existing Id, return true
+		if (accounts.contains(id)) {
+			return true;
+		}
+			accounts.add(id); 
+			return false;
 	}
+		
 	
 	
 
@@ -146,14 +225,12 @@ public class Client extends User{
 	}
 	
 	
-	public Client(String n, String p, boolean isTeller) {
-		super(n, p, isTeller);
-	}
 	
 	//connect to server
 	public Client(String server, int numPort) throws UnknownHostException, IOException {
+		//create user
 		super(name, password, teller);
-
+		//connect to server
 		socket = new Socket(server, numPort);
 	    outstream= new ObjectOutputStream(socket.getOutputStream());
 	    instream = new ObjectInputStream(socket.getInputStream());
