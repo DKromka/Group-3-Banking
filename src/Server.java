@@ -5,6 +5,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.Date;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -13,7 +14,7 @@ public class Server {
 	//back and forth server to client... 
 	static private HashMap <String,User> Users;
 	static private HashMap <String,BankAccount> Accounts;
-	static private HashMap <String,Vector<log>> Logs;
+	static private HashMap <String,Vector<Log>> Logs;
 	
 	Server(){
 		Users = new HashMap<String,User>();
@@ -226,8 +227,9 @@ public class Server {
 		private void handleDeposit() throws IOException {
 			
 			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
-			
 			float funds = msg.getFunds();
+			Date date = new Date(100L);
+			Vector<Log> accountLogs = Logs.get(account.getName());
 			
 			if(account != null) { //if it exists
 				
@@ -235,6 +237,9 @@ public class Server {
 					
 					if(account.deposit(funds)) {
 						msg = new Message(MessageType.SUCCESS,"Funds Deposited"); //withdraw is successful
+						Log log = new Log(currUser.getName(),"Deposit",funds,date,account.getName());
+						accountLogs.addElement(log);
+						Logs.put(account.getName(), accountLogs);
 					}
 					else{
 						msg = new Message(MessageType.FAIL,"Insufficient Funds"); //withdraw is unsuccessful
@@ -375,7 +380,7 @@ public class Server {
 			}
 		}
 		
-		private void handleLogRequest() {
+		private void handleLogRequest() throws IOException {
 			String user = null;
 			String action = null;
 			String date = null;
@@ -398,6 +403,10 @@ public class Server {
 				msg = new Message(MessageType.FAIL,"Invalid Account");
 			}
 			out.writeObject(msg);
+		}
+		
+		private void addLog(String action) {
+			
 		}
 	}
 	
