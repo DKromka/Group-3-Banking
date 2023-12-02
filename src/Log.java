@@ -7,12 +7,12 @@ public class Log implements Serializable {
 	protected Date date;
 	protected String user;
 	protected String account;
-	protected MessageType action;
+	protected String action;
 	float amount;
 	
 	
 	//constructor to set variables
-	public Log(String user,MessageType action, float amount, Date date, String account){
+	public Log(String user,String action, float amount, Date date, String account){
 		this.user = user;
 		this.action = action;
 		this.amount = amount;
@@ -21,7 +21,7 @@ public class Log implements Serializable {
 	}
 	
 	//overload constructor for non-fund actions
-	public Log(String user,MessageType action, Date date, String account){
+	public Log(String user,String action, Date date, String account){
 		this.user = user;
 		this.action = action;
 		this.amount = -1;
@@ -39,7 +39,7 @@ public class Log implements Serializable {
 		return amount;
 	}
 	
-	public MessageType getAction() {
+	public String getAction() {
 		return action;
 	}
 
