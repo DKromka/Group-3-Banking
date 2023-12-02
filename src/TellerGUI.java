@@ -115,7 +115,7 @@ public class TellerGUI implements ActionListener {
 			displayMainUI();
 		}
 
-	private void displayMainUI() {
+	private void displayMainUI() throws IOException {
 		frame.setVisible(false);
 		int ans = JOptionPane.showOptionDialog(null, "What do?", "Teller", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, new String[] {"Select Account", "Make Account", "Log Out"}, "Select Account");;
 		switch (ans) {
@@ -142,10 +142,39 @@ public class TellerGUI implements ActionListener {
 		frame.setVisible(true);
 	}
 	
-	private boolean login(String user, String pass) {
-		// STUB, remember this one should send Teller login, server handles the difference
+	private boolean login(String user, String pass) throws IOException, ClassNotFoundException {
+
+		Message message = new Message(MessageType.CONNECT_TELLER, "");
+
+		outObj.writeObject(message);
+		outObj.flush();
+
+		message = (Message) inObj.readObject();
+
+		if (message.getType().equals(MessageType.SUCCESS)) {
+
+			message = new Message(MessageType.LOGIN_REQ, user + "\n" + pass);
 		
-		return true;
+			outObj.writeObject(message);
+			outObj.flush();
+			
+			message = (Message) inObj.readObject();
+			
+			if (message.getType().equals(MessageType.SUCCESS)) {
+				
+				return true;
+				
+			} else {
+				
+				return false;
+			}
+
+		} else {
+
+			return false;
+
+		}
+		
 	}
 	
 	
@@ -164,17 +193,44 @@ public class TellerGUI implements ActionListener {
 		return true;
 	}
 	
-	private boolean deposit(float amount) {
-		// This and withdraw can basically get copied over from the client one I think
-		// just use the outer scope currAccount variable
+	private boolean deposit(float amount) throws IOException, ClassNotFoundException {
 		
-		return true;
+		Message message = new Message(MessageType.DEPOSIT, currAccount, amount);
+				
+		outObj.writeObject(message);
+		outObj.flush();
+		
+		message = (Message) inObj.readObject();
+		
+		if (message.getType().equals(MessageType.SUCCESS)) {
+			
+			return true;
+			
+		} else {
+			
+			return false;
+		}
+				
 	}
 	
-	private boolean withdraw(float amount) {
-		// ditto
+	private boolean withdraw(float amount) throws IOException, ClassNotFoundException {
 		
-		return true;
+		Message message = new Message(MessageType.WITHDRAW, currAccount, amount);
+				
+		outObj.writeObject(message);
+		outObj.flush();
+		
+		message = (Message) inObj.readObject();
+		
+		if (message.getType().equals(MessageType.SUCCESS)) {
+			
+			return true;
+			
+		} else {
+			
+			return false;
+		}
+				
 	}
 	
 	private boolean createAccount(String newAcc) {
@@ -201,8 +257,15 @@ public class TellerGUI implements ActionListener {
 	
 	
 	
-	private void logout() {
-		// STUB
+	private void logout() throws IOException {
+
+		Message message = new Message(MessageType.LOGOUT, "");
+				
+		outObj.writeObject(message);
+		outObj.flush();
+
+		System.exit(0);
+
 	}
 	
 	public void actionPerformed(ActionEvent event) {
