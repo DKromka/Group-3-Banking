@@ -29,6 +29,11 @@ public class Log implements Serializable {
 		this.account = account;	
 	}
 
+	public static Log generateLog(String user, String action, float amount, Date date, String account) {
+        float logAmount = (action.equals("Deposit") || action.equals("Withdrawal")) ? amount : -1;
+        return new Log(user, action, logAmount, date, account);
+    }
+	
 	//getters - public
 	
 	public String getUser() {	

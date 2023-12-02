@@ -262,12 +262,18 @@ public class Server {
 			
 			float funds = msg.getFunds();
 			
+			Date date = new Date(100L);
+			Vector<Log> accountLogs = Logs.get(account.getName());
+			
 			if(account != null) { //if it exists
 				
 				if(account.hasUser(currUser.getName())) { //check if user has permission to access account
 					
 					if(account.withdraw(funds)) {
 						msg = new Message(MessageType.SUCCESS,"Funds Withdrawn"); //withdraw is successful
+						// Create log using generateLog method
+		                Log log = Log.generateLog(currUser.getName(), "Withdrawal", funds, date, account.getName());
+		                accountLogs.addElement(log);
 					}
 					else{
 						msg = new Message(MessageType.FAIL,"Insufficient Funds"); //withdraw is unsuccessful
