@@ -94,20 +94,35 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 	
 	private static boolean login(ObjectOutputStream outObj, ObjectInputStream inObj, String user, String pass) throws IOException, ClassNotFoundException {
 		
-		Message message = new Message(MessageType.LOGIN_REQ, user + "\n" + pass);
-		
+		Message message = new Message(MessageType.CONNECT_CLIENT, "");
+
 		outObj.writeObject(message);
 		outObj.flush();
-		
+
 		message = (Message) inObj.readObject();
-		
+
 		if (message.getType().equals(MessageType.SUCCESS)) {
+
+			message = new Message(MessageType.LOGIN_REQ, user + "\n" + pass);
+		
+			outObj.writeObject(message);
+			outObj.flush();
 			
-			return true;
+			message = (Message) inObj.readObject();
 			
+			if (message.getType().equals(MessageType.SUCCESS)) {
+				
+				return true;
+				
+			} else {
+				
+				return false;
+			}
+
 		} else {
-			
+
 			return false;
+
 		}
 		
 	}
@@ -210,6 +225,8 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 				
 		outObj.writeObject(message);
 		outObj.flush();
+
+		System.exit(0);
 		
 	}
 }
