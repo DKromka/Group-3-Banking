@@ -18,6 +18,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	ClientGUI.class,
 	TellerGUI.class
 })
+
 public class AllTests {
 	
 }
