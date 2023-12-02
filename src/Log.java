@@ -3,7 +3,7 @@ import java.io.Serializable;
 //date
 import java.util.Date;
 
-public class log implements Serializable {
+public class Log implements Serializable {
 	protected Date date;
 	protected String user;
 	protected String account;
@@ -12,7 +12,7 @@ public class log implements Serializable {
 	
 	
 	//constructor to set variables
-	public log(String user,MessageType action, float amount, Date date, String account){
+	public Log(String user,MessageType action, float amount, Date date, String account){
 		this.user = user;
 		this.action = action;
 		this.amount = amount;
