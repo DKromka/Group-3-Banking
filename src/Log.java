@@ -19,6 +19,15 @@ public class Log implements Serializable {
 		this.date = date;
 		this.account = account;	
 	}
+	
+	//overload constructor for non-fund actions
+	public Log(String user,MessageType action, Date date, String account){
+		this.user = user;
+		this.action = action;
+		this.amount = -1;
+		this.date = date;
+		this.account = account;	
+	}
 
 	//getters - public
 	
