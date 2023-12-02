@@ -14,7 +14,6 @@ public class Server {
 	static private HashMap <String,User> Users;
 	static private HashMap <String,BankAccount> Accounts;
 	static private HashMap <String,Vector<log>> Logs;
-	static private float minimumFunds = 25;
 	
 	Server(){
 		Users = new HashMap<String,User>();
@@ -64,7 +63,7 @@ public class Server {
 		private ObjectOutputStream out;
 		private ObjectInputStream in;
 		
-		private User currClient;
+		private User currUser;
 		private BankAccount currAccount;
 		
 		private boolean loggedIN, Teller;
@@ -100,7 +99,7 @@ public class Server {
 							
 						msg = (Message)in.readObject();	//get object from network
 							
-						if(currClient.isTeller() && Teller) {
+						if(currUser.isTeller() && Teller) {
 							switch (msg.getType()) {
 								case LOGOUT:
 									handleLogout();
@@ -185,16 +184,14 @@ public class Server {
 					if(msg.type == MessageType.LOGIN_REQ) {
 												
 						input = msg.getData().split("\n",2); //parse data string from message object
+
+						username = input[0];
+						password = input[1];
 						
-						System.out.println(input[0]);
-						//store username and password temporarily
-						username = ""; //input[0];
-						password = ""; //input[1];
+						currUser = Users.get(username);
 						
-						currClient = Users.get(input[0]);
-						
-						if(currClient != null) {
-							if(currClient.verify(password)) {
+						if(currUser != null) {
+							if(currUser.verify(password)) {
 								loggedIN = true;
 								msg = new Message(MessageType.SUCCESS,"Login Successful");
 							}
@@ -228,14 +225,23 @@ public class Server {
 		
 		private void handleDeposit() throws IOException {
 			
-			currAccount = Accounts.get(msg.getData()); // grabs account from hash
+			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
 			
-			if(currAccount.hasUser(currClient.getName()) && currAccount != null) { //check if user has permission to access and if it exists
-				if(currAccount.deposit(msg.getFunds())) {
-					msg = new Message(MessageType.SUCCESS,"Funds have been Deopsited"); //deposit successful
+			float funds = msg.getFunds();
+			
+			if(account != null) { //if it exists
+				
+				if(account.hasUser(currUser.getName())) { //check if user has permission to access account
+					
+					if(account.deposit(funds)) {
+						msg = new Message(MessageType.SUCCESS,"Funds Deposited"); //withdraw is successful
+					}
+					else{
+						msg = new Message(MessageType.FAIL,"Insufficient Funds"); //withdraw is unsuccessful
+					}
 				}
 				else {
-					msg = new Message(MessageType.FAIL,"Invalid Funds"); //deposit is unsuccessful
+					msg = new Message(MessageType.FAIL,"Invalid User");
 				}
 			}
 			else {
@@ -247,15 +253,23 @@ public class Server {
 		
 		private void handleWithdraw() throws IOException {
 			
-			currAccount = Accounts.get(msg.getData()); //grabs account from hash
+			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
 			
-			float withdrawFunds;
-			if(currAccount.hasUser(currClient.getName()) && currAccount != null) { //check if user has permission to access and if it exists
-				if(currAccount.withdraw(msg.getFunds())) {
-					msg = new Message(MessageType.SUCCESS,"Funds Withdrawn"); //withdraw is successful
+			float funds = msg.getFunds();
+			
+			if(account != null) { //if it exists
+				
+				if(account.hasUser(currUser.getName())) { //check if user has permission to access account
+					
+					if(account.withdraw(funds)) {
+						msg = new Message(MessageType.SUCCESS,"Funds Withdrawn"); //withdraw is successful
+					}
+					else{
+						msg = new Message(MessageType.FAIL,"Insufficient Funds"); //withdraw is unsuccessful
+					}
 				}
-				else{
-					msg = new Message(MessageType.FAIL,"Insufficient Funds"); //withdraw is unsuccessful
+				else {
+					msg = new Message(MessageType.FAIL,"Invalid User");
 				}
 			}
 			else {
@@ -266,11 +280,12 @@ public class Server {
 		}
 		
 		private void handleAccountInfoReq() throws IOException{
-			currAccount = Accounts.get(msg.getData()); //grabs account from hash
 			
-			if(currAccount != null) { //check if it exists
-				if(currAccount.hasUser(currClient.getName())) { //checks if user has permission to access account
-					msg = new Message(MessageType.ACCOUNT_INFO,currAccount.getName() + "\n" + currAccount.getStatus(),currAccount.getBalance());
+			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
+			
+			if(account != null) { //check if it exists
+				if(account.hasUser(currUser.getName())) { //checks if user has permission to access account
+					msg = new Message(MessageType.ACCOUNT_INFO,account.getName() + "\n" + account.getStatus(),account.getBalance());
 				}
 				else {
 					msg = new Message(MessageType.FAIL,"Acccess Denied");
@@ -283,15 +298,17 @@ public class Server {
 		}
 		
 		private void handleAddUser()throws IOException{
+			
 			input = msg.getData().split("\n",2);
-			String account = input[0];
+			
+			String accountName = input[0];
 			String user = input[1];
 			
-			currAccount = Accounts.get(account);
+			BankAccount account = Accounts.get(accountName);
 			
-			if(currAccount != null) {
+			if(account != null) {
 				if(currAccount.addUser(user)) {
-					msg = new Message(MessageType.SUCCESS,"User " + user + " added to account " + account);
+					msg = new Message(MessageType.SUCCESS,"User " + user + " added to account " + accountName);
 				}
 				else {
 					msg = new Message(MessageType.FAIL,"User already attached");
@@ -304,15 +321,17 @@ public class Server {
 		}
 		
 		private void handleRemoveUser() throws IOException{
+			
 			input = msg.getData().split("\n",2);
-			String account = input[0];
+			
+			String accountName = input[0];
 			String user = input[1];
 			
-			currAccount = Accounts.get(account);
-			
-			if(currAccount != null) {
-				if(currAccount.removeUser(user)) {
-					msg = new Message(MessageType.SUCCESS,"User " + user + " removed from account " + account);
+			BankAccount account = Accounts.get(accountName);
+			 
+			if(account != null) {
+				if(account.removeUser(user)) {
+					msg = new Message(MessageType.SUCCESS,"User " + user + " removed from account " + accountName);
 				}
 				else {
 					msg = new Message(MessageType.FAIL,"User not attached");
@@ -328,14 +347,15 @@ public class Server {
 		private void handleTransfer(){
 			
 			input = msg.getData().split("\n",2);
-			
 			/* 
 			 * Message data will be captured to prevent any unwanted errors
 			 * or overwrites
 			 */
 			String account1 = input[0]; //name of account
 			String account2 = input[1]; //name of destination account
+			
 			float funds = msg.getFunds(); //funds duh
+			
 			BankAccount fromAccount = Accounts.get(account1); //account funds withdrawn from
 			BankAccount toAccount = Accounts.get(account2); //account funds transfered to
 			
@@ -372,7 +392,7 @@ public class Server {
 					msg = new Message(MessageType.LOG_INFO,logData);
 					out.writeObject(msg);
 		        }
-				msg = new Message(MessageType.DONE,"All logs read");
+				msg = new Message(MessageType.DONE,"");
 			}
 			else {
 				msg = new Message(MessageType.FAIL,"Invalid Account");
