@@ -236,7 +236,7 @@ public class Server {
 				if(account.hasUser(currUser.getName())) { //check if user has permission to access account
 					
 					if(account.deposit(funds)) {
-						msg = new Message(MessageType.SUCCESS,"Funds Deposited"); //withdraw is successful
+						msg = new Message(MessageType.SUCCESS,"Funds Deposited"); //deposit is successful
 						Log log = new Log(currUser.getName(),"Deposit",funds,date,account.getName());
 						accountLogs.addElement(log);
 						Logs.put(account.getName(), accountLogs);
@@ -262,12 +262,17 @@ public class Server {
 			
 			float funds = msg.getFunds();
 			
+			Date date = new Date(100L);
+			Vector<Log> accountLogs = Logs.get(account.getName());
+			
 			if(account != null) { //if it exists
 				
 				if(account.hasUser(currUser.getName())) { //check if user has permission to access account
 					
 					if(account.withdraw(funds)) {
 						msg = new Message(MessageType.SUCCESS,"Funds Withdrawn"); //withdraw is successful
+		                Log log = new Log(currUser.getName(), "Withdrawal", funds, date, account.getName());
+		                accountLogs.addElement(log);
 					}
 					else{
 						msg = new Message(MessageType.FAIL,"Insufficient Funds"); //withdraw is unsuccessful
@@ -303,17 +308,19 @@ public class Server {
 		}
 		
 		private void handleAddUser()throws IOException{
-			
+			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
 			input = msg.getData().split("\n",2);
-			
+			Date date = new Date(100L);
 			String accountName = input[0];
 			String user = input[1];
-			
-			BankAccount account = Accounts.get(accountName);
+			Vector<Log> accountLogs = Logs.get(account.getName());
+			//BankAccount account = Accounts.get(accountName);
 			
 			if(account != null) {
 				if(currAccount.addUser(user)) {
 					msg = new Message(MessageType.SUCCESS,"User " + user + " added to account " + accountName);
+	                Log log = new Log(currUser.getName(), "User Added", date, account.getName());
+	                accountLogs.addElement(log);
 				}
 				else {
 					msg = new Message(MessageType.FAIL,"User already attached");
@@ -326,17 +333,19 @@ public class Server {
 		}
 		
 		private void handleRemoveUser() throws IOException{
-			
+			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
 			input = msg.getData().split("\n",2);
-			
+			Date date = new Date(100L);
 			String accountName = input[0];
 			String user = input[1];
-			
-			BankAccount account = Accounts.get(accountName);
+			Vector<Log> accountLogs = Logs.get(account.getName());
+			//BankAccount account = Accounts.get(accountName);
 			 
 			if(account != null) {
 				if(account.removeUser(user)) {
 					msg = new Message(MessageType.SUCCESS,"User " + user + " removed from account " + accountName);
+					Log log = new Log(currUser.getName(), "User Removed", date, account.getName());
+	                accountLogs.addElement(log);
 				}
 				else {
 					msg = new Message(MessageType.FAIL,"User not attached");
@@ -350,7 +359,6 @@ public class Server {
 		}
 		
 		private void handleTransfer(){
-			
 			input = msg.getData().split("\n",2);
 			/* 
 			 * Message data will be captured to prevent any unwanted errors
