@@ -233,26 +233,73 @@ public class TellerGUI implements ActionListener {
 				
 	}
 	
-	private boolean createAccount(String newAcc) {
-		// STUB
+	private boolean createAccount(String newAcc) throws IOException, ClassNotFoundException {
 		
-		return true;
+		Message message = new Message(MessageType.MAKE_ACCOUNT, newAcc, 25); // 25 is minBalance
+				
+		outObj.writeObject(message);
+		outObj.flush();
+		
+		message = (Message) inObj.readObject();
+		
+		if (message.getType().equals(MessageType.SUCCESS)) {
+			
+			return true;
+			
+		} else {
+			
+			return false;
+		}
+				
 	}
 	
-	private boolean removeUser(String user) {
-		// STUB, use account name from currAccount
+	private boolean removeUser(String user) throws IOException, ClassNotFoundException {
 		
-		return true;
+		Message message = new Message(MessageType.REMOVE_USER, currAccount + "\n" + user);
+				
+		outObj.writeObject(message);
+		outObj.flush();
+		
+		message = (Message) inObj.readObject();
+		
+		if (message.getType().equals(MessageType.SUCCESS)) {
+			
+			return true;
+			
+		} else {
+			
+			return false;
+		}
+				
 	}
 	
-	private boolean addUser(String user) {
-		// STUB, use account name from currAccount
+	private boolean addUser(String user) throws IOException, ClassNotFoundException {
 		
-		return true;
+		Message message = new Message(MessageType.ADD_USER, currAccount + "\n" + user);
+				
+		outObj.writeObject(message);
+		outObj.flush();
+		
+		message = (Message) inObj.readObject();
+		
+		if (message.getType().equals(MessageType.SUCCESS)) {
+			
+			return true;
+			
+		} else {
+			
+			return false;
+		}
+				
 	}
 	
-	private void changeStatus(String status) {
-		// STUB, ^
+	private void changeStatus(String status) throws IOException, ClassNotFoundException {
+		
+		Message message = new Message(MessageType.STATUS_CHANGE, currAccount + "\n" + status);
+				
+		outObj.writeObject(message);
+		outObj.flush();
+		
 	}
 	
 	
