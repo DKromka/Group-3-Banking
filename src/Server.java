@@ -6,13 +6,14 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.Vector;
 
 public class Server {
 	//Can you put input/outputStreams to send message objects
 	//back and forth server to client... 
 	static private HashMap <String,User> Users;
 	static private HashMap <String,BankAccount> Accounts;
-	static private HashMap <String,log> Logs;
+	static private HashMap <String,Vector<log>> Logs;
 	static private float minimumFunds = 25;
 	
 	Server(){
@@ -55,16 +56,22 @@ public class Server {
 	}
 	private static class ClientHandler implements Runnable {
 		private final Socket clientSocket;
+		
 		private Message msg;
+		
 		private OutputStream outputStream;
 		private InputStream inputStream;
 		private ObjectOutputStream out;
 		private ObjectInputStream in;
+		
 		private User currClient;
-		private boolean loggedIN, Teller;
 		private BankAccount currAccount;
-		private Server parent;
+		
+		private boolean loggedIN, Teller;
 		private String[] input;
+		
+		private Server parent;
+		
 		//Constructor
 		public ClientHandler(Socket socket)  throws IOException, ClassNotFoundException
 		{
@@ -93,7 +100,7 @@ public class Server {
 							
 						msg = (Message)in.readObject();	//get object from network
 							
-						if(currClient.isTeller()) {
+						if(currClient.isTeller() && Teller) {
 							switch (msg.getType()) {
 								case LOGOUT:
 									handleLogout();
@@ -326,27 +333,51 @@ public class Server {
 			 * Message data will be captured to prevent any unwanted errors
 			 * or overwrites
 			 */
-			String account1 = input[0]; //account funds withdrawn from
-			String account2 = input[1]; //account funds transfered too
-			float funds = msg.getFunds();
-			BankAccount fromAccount = Accounts.get(account1);
-			BankAccount toAccount = Accounts.get(account2);
+			String account1 = input[0]; //name of account
+			String account2 = input[1]; //name of destination account
+			float funds = msg.getFunds(); //funds duh
+			BankAccount fromAccount = Accounts.get(account1); //account funds withdrawn from
+			BankAccount toAccount = Accounts.get(account2); //account funds transfered to
 			
-			if(fromAccount == null) {
-				msg = new Message(MessageType.FAIL,"Invalid account: " + account1);
-			}
-			else if(toAccount == null) {
-				msg = new Message(MessageType.FAIL,"Invalid account: " + account2);
+			if(fromAccount == null || toAccount == null) {
+				msg = (fromAccount == null) ?
+						(new Message(MessageType.FAIL,"Invalid account: " + account1)) :
+						(new Message(MessageType.FAIL,"Invalid account: " + account2));
 			}
 			else {
 				if(fromAccount.withdraw(funds)) {
-					
+					toAccount.deposit(funds);
+					msg = new Message(MessageType.SUCCESS,"Transfer Successful");
+				}
+				else {
+					msg = new Message(MessageType.FAIL,"Insufficient Funds");
 				}
 			}
 		}
 		
 		private void handleLogRequest() {
+			String user = null;
+			String action = null;
+			String date = null;
+			float amount = -1;
+			String logData;
 			
+			String input = msg.getData();
+			
+			Vector<log> userLogs = Logs.get(input);
+			
+			if(Logs.containsKey(input)) {
+				for (log x : userLogs) {
+					logData = x.getUser() + "\n"+ x.getAction() + "\n" + x.getAmount() + "\n" + x.getDate();
+					msg = new Message(MessageType.LOG_INFO,logData);
+					out.writeObject(msg);
+		        }
+				msg = new Message(MessageType.DONE,"All logs read");
+			}
+			else {
+				msg = new Message(MessageType.FAIL,"Invalid Account");
+			}
+			out.writeObject(msg);
 		}
 	}
 	
