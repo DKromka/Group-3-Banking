@@ -1,30 +1,60 @@
 import java.io.IOException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Date;
+import java.sql.Date;
 import java.util.HashMap;
+import java.util.Scanner;
 import java.util.Vector;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.filechooser.*;
 
 public class Server {
 	//Can you put input/outputStreams to send message objects
-	//back and forth server to client... 
+	//back and forth server to client... No, that functionality goes in the
+	//ClientHandler since there's streams per client
 	static private HashMap <String,User> Users;
 	static private HashMap <String,BankAccount> Accounts;
 	static private HashMap <String,Vector<Log>> Logs;
-
-	static private String workingDir; // !!! This needs to be initialized somewhere !!!
 	
-	Server(){
+	static private String workingDir;
+	
+	Server() {
 		Users = new HashMap<String,User>();
 		Accounts = new HashMap<String,BankAccount>();
-		LoadUsers();
 	}
 	
 	public static void main(String[] args) {
+		
+		JFrame frame = new JFrame();
+		JFileChooser fileselect = new JFileChooser();
+		fileselect.setFileFilter(new FileNameExtensionFilter("User data file", "txt"));
+		fileselect.setAcceptAllFileFilterUsed(false);
+		boolean flag = false;
+		while (!flag) {
+			int accept = fileselect.showDialog(frame, "Select user data file");
+			if (accept == fileselect.APPROVE_OPTION) {
+				try {
+					workingDir = fileselect.getSelectedFile().getParent().toString();
+					initData();
+					flag = true;
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+			 }
+		 }
+		
 		ServerSocket server= null;
 		try {
 			//Create a ServerSock on socket:4591
@@ -230,8 +260,7 @@ public class Server {
 			
 			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
 			float funds = msg.getFunds();
-			
-			Date date = new Date();
+			Date date = new Date(100L);
 			Vector<Log> accountLogs = Logs.get(account.getName());
 			
 			if(account != null) { //if it exists
@@ -239,8 +268,7 @@ public class Server {
 				if(account.hasUser(currUser.getName())) { //check if user has permission to access account
 					
 					if(account.deposit(funds)) {
-						msg = new Message(MessageType.SUCCESS,"Funds Deposited"); //deposit is successful
-						
+						msg = new Message(MessageType.SUCCESS,"Funds Deposited"); //withdraw is successful
 						Log log = new Log(currUser.getName(),"Deposit",funds,date,account.getName());
 						accountLogs.addElement(log);
 						Logs.put(account.getName(), accountLogs);
@@ -266,19 +294,12 @@ public class Server {
 			
 			float funds = msg.getFunds();
 			
-			Date date = new Date();
-			Vector<Log> accountLogs = Logs.get(account.getName());
-			
 			if(account != null) { //if it exists
 				
 				if(account.hasUser(currUser.getName())) { //check if user has permission to access account
 					
 					if(account.withdraw(funds)) {
 						msg = new Message(MessageType.SUCCESS,"Funds Withdrawn"); //withdraw is successful
-						
-		                Log log = new Log(currUser.getName(), "Withdrawal", funds, date, account.getName());
-		                accountLogs.addElement(log);
-		                Logs.put(account.getName(), accountLogs);
 					}
 					else{
 						msg = new Message(MessageType.FAIL,"Insufficient Funds"); //withdraw is unsuccessful
@@ -314,23 +335,17 @@ public class Server {
 		}
 		
 		private void handleAddUser()throws IOException{
-			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
 			
 			input = msg.getData().split("\n",2);
+			
 			String accountName = input[0];
 			String user = input[1];
 			
-			Date date = new Date();
-			Vector<Log> accountLogs = Logs.get(account.getName());
-			//BankAccount account = Accounts.get(accountName);
+			BankAccount account = Accounts.get(accountName);
 			
 			if(account != null) {
 				if(currAccount.addUser(user)) {
 					msg = new Message(MessageType.SUCCESS,"User " + user + " added to account " + accountName);
-	                
-					Log log = new Log(currUser.getName(), "User Added", date, account.getName());
-	                accountLogs.addElement(log);
-	                Logs.put(account.getName(), accountLogs);
 				}
 				else {
 					msg = new Message(MessageType.FAIL,"User already attached");
@@ -343,23 +358,17 @@ public class Server {
 		}
 		
 		private void handleRemoveUser() throws IOException{
-			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
 			
 			input = msg.getData().split("\n",2);
+			
 			String accountName = input[0];
 			String user = input[1];
 			
-			Date date = new Date();
-			Vector<Log> accountLogs = Logs.get(account.getName());
-			//BankAccount account = Accounts.get(accountName);
+			BankAccount account = Accounts.get(accountName);
 			 
 			if(account != null) {
 				if(account.removeUser(user)) {
 					msg = new Message(MessageType.SUCCESS,"User " + user + " removed from account " + accountName);
-					
-					Log log = new Log(currUser.getName(), "User Removed", date, account.getName());
-	                accountLogs.addElement(log);
-	                Logs.put(account.getName(), accountLogs);
 				}
 				else {
 					msg = new Message(MessageType.FAIL,"User not attached");
@@ -373,6 +382,7 @@ public class Server {
 		}
 		
 		private void handleTransfer(){
+			
 			input = msg.getData().split("\n",2);
 			/* 
 			 * Message data will be captured to prevent any unwanted errors
@@ -386,10 +396,6 @@ public class Server {
 			BankAccount fromAccount = Accounts.get(account1); //account funds withdrawn from
 			BankAccount toAccount = Accounts.get(account2); //account funds transfered to
 			
-			Date date = new Date();
-			Vector<Log> fromAccountLogs = Logs.get(account1);
-			Vector<Log> toAccountLogs = Logs.get(account2);
-			
 			if(fromAccount == null || toAccount == null) {
 				msg = (fromAccount == null) ?
 						(new Message(MessageType.FAIL,"Invalid account: " + account1)) :
@@ -399,14 +405,6 @@ public class Server {
 				if(fromAccount.withdraw(funds)) {
 					toAccount.deposit(funds);
 					msg = new Message(MessageType.SUCCESS,"Transfer Successful");
-					
-					Log log1 = new Log(currUser.getName(), "Transfer", date, account1);
-	                fromAccountLogs.addElement(log1);
-	                Logs.put(account1, fromAccountLogs);
-	                
-	                Log log2 = new Log(currUser.getName(), "Transfer", date, account2);
-	                fromAccountLogs.addElement(log2);
-	                Logs.put(account2, toAccountLogs);
 				}
 				else {
 					msg = new Message(MessageType.FAIL,"Insufficient Funds");
@@ -438,10 +436,13 @@ public class Server {
 			}
 			out.writeObject(msg);
 		}
+		
+		private void addLog(String action) {
+			
+		}
 	}
 	
-	
-	private void initData() throws FileNotFoundException { // it's not actually possible for this to get thrown I think
+	private static void initData() throws FileNotFoundException { // it's not actually possible for this to get thrown I think
 		FileInputStream inFile;
 		String currLine = " ";
 		Scanner scan;
