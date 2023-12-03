@@ -1,3 +1,4 @@
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -60,7 +61,7 @@ public class TellerGUI implements ActionListener {
 		private void printDebugData() {System.out.println("ltg");}
 	}
 	
-	public void run() throws NumberFormatException, UnknownHostException, IOException {
+	public void run() throws NumberFormatException, UnknownHostException, IOException, HeadlessException, ClassNotFoundException {
 			Socket socket;
 			inObj = null;
 			outObj = null;
@@ -115,7 +116,7 @@ public class TellerGUI implements ActionListener {
 			displayMainUI();
 		}
 
-	private void displayMainUI() throws IOException {
+	private void displayMainUI() throws IOException, HeadlessException, ClassNotFoundException {
 		frame.setVisible(false);
 		int ans = JOptionPane.showOptionDialog(null, "What do?", "Teller", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, new String[] {"Select Account", "Make Account", "Log Out"}, "Select Account");;
 		switch (ans) {
@@ -179,18 +180,31 @@ public class TellerGUI implements ActionListener {
 	
 	
 	
-	private boolean getLogs() {
-		// STUB, format is for each log, [0] is username, [1] is action, [2] is amount, [3] is date
-		// should handle the server comms part
-		// The string currAccount stores the account we want to pull from
-		// This should return false if the server passes FAIL
+	private boolean getLogs() throws IOException, ClassNotFoundException {
 		
 		currLogs.clear();
 		
-		currLogs.add(new String[] {"meee :3", "Deposit", "10", "10/23/2013"});
-		currLogs.add(new String[] {"Chai", "Withdraw", "9999", "1/1/3079"});
+		Message message = new Message(MessageType.LOG_INFO, currAccount);
 		
-		return true;
+		outObj.writeObject(message);
+		outObj.flush();
+		
+		message = (Message) inObj.readObject();
+		
+		if (message.getType().equals(MessageType.SUCCESS)) {
+			
+			Log inLog = (Log) inObj.readObject();
+			
+			currLogs.add(new String[] {inLog.getUser(), inLog.getAction(), inLog.getAmount(), inLog.getDate()});
+			
+			return true;
+			
+		} else {
+			
+			return false;
+			
+		}
+
 	}
 	
 	private boolean deposit(float amount) throws IOException, ClassNotFoundException {
@@ -326,8 +340,16 @@ public class TellerGUI implements ActionListener {
 				JOptionPane.showMessageDialog(null, "Invalid amount", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			deposit(depositAmount);
-			refresh();
+			try {
+				deposit(depositAmount);
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				refresh();
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
 			return;
 		case "withdraw":
 			float withdrawAmount;
@@ -338,32 +360,60 @@ public class TellerGUI implements ActionListener {
 				JOptionPane.showMessageDialog(null, "Invalid amount", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			withdraw(withdrawAmount);
-			refresh();
+			try {
+				withdraw(withdrawAmount);
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				refresh();
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
 			return;
 		case "refresh":
-			refresh();
+			try {
+				refresh();
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
 			return;
 		case "Die":
-			displayMainUI();
+			try {
+				displayMainUI();
+			} catch (HeadlessException | ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
 			return;
 		case "status":
-			changeStatus((String) JOptionPane.showInputDialog(frame, "Which status?", currAccount, JOptionPane.PLAIN_MESSAGE, null, new String[] {"Good","Freeze","Inactive"}, "Good"));
+			try {
+				changeStatus((String) JOptionPane.showInputDialog(frame, "Which status?", currAccount, JOptionPane.PLAIN_MESSAGE, null, new String[] {"Good","Freeze","Inactive"}, "Good"));
+			} catch (HeadlessException | ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
 			return;
 		case "add":
-			if (!addUser(JOptionPane.showInputDialog("Which user to add?"))) {
-				JOptionPane.showMessageDialog(null, "That user is already on this account", "Error", JOptionPane.ERROR_MESSAGE);
+			try {
+				if (!addUser(JOptionPane.showInputDialog("Which user to add?"))) {
+					JOptionPane.showMessageDialog(null, "That user is already on this account", "Error", JOptionPane.ERROR_MESSAGE);
+				}
+			} catch (HeadlessException | ClassNotFoundException | IOException e) {
+				e.printStackTrace();
 			}
 			return;
 		case "remove":
-			if (!removeUser(JOptionPane.showInputDialog("Which user to remove?"))) {
-				JOptionPane.showMessageDialog(null, "That user is not on this account", "Error", JOptionPane.ERROR_MESSAGE);
+			try {
+				if (!removeUser(JOptionPane.showInputDialog("Which user to remove?"))) {
+					JOptionPane.showMessageDialog(null, "That user is not on this account", "Error", JOptionPane.ERROR_MESSAGE);
+				}
+			} catch (HeadlessException | ClassNotFoundException | IOException e) {
+				e.printStackTrace();
 			}
 			return;
 		}
 	}
 	
-	public void refresh() {
+	public void refresh() throws ClassNotFoundException, IOException {
 		getLogs();
 		tablePane.remove(logTable);
 		logTable = new JTable(new MyTableModel());
