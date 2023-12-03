@@ -29,12 +29,11 @@ public class Server {
 	
 	static private String workingDir;
 	
-	Server() {
+	public static void main(String[] args) {
+		
 		Users = new HashMap<String,User>();
 		Accounts = new HashMap<String,BankAccount>();
-	}
-	
-	public static void main(String[] args) {
+		Logs = new HashMap <String,Vector<Log>>();
 		
 		JFrame frame = new JFrame();
 		JFileChooser fileselect = new JFileChooser();
