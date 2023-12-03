@@ -15,6 +15,8 @@ public class Server {
 	static private HashMap <String,User> Users;
 	static private HashMap <String,BankAccount> Accounts;
 	static private HashMap <String,Vector<Log>> Logs;
+
+	static private String workingDir; // !!! This needs to be initialized somewhere !!!
 	
 	Server(){
 		Users = new HashMap<String,User>();
@@ -438,7 +440,95 @@ public class Server {
 		}
 	}
 	
-	private void LoadUsers(){
-		//load user data from file.
+	
+	private void initData() throws FileNotFoundException { // it's not actually possible for this to get thrown I think
+		FileInputStream inFile;
+		String currLine = " ";
+		Scanner scan;
+		String currAcc;
+		String currUser;
+		String currAmount;
+		String currDate;
+		String currAction;
+		String currMinBalance;
+		String currBalance;
+		AccountStatus currStatus;
+		
+		File userFile = new File(workingDir + "/users.txt");
+		scan = new Scanner(userFile);
+		for (currLine = scan.nextLine(); !currLine.equals(""); currLine = scan.nextLine()) {
+			Users.put(currLine.substring(0, currLine.indexOf('|')), new User(currLine.substring(0, currLine.indexOf('|')), currLine.substring(currLine.indexOf('|') + 1, currLine.lastIndexOf('|')), currLine.charAt(currLine.length() - 1) == '1'));
+			// warning: do not try to read this
+		}
+		
+		File accFile = new File(workingDir + "/accounts.txt");
+		scan = new Scanner(accFile);
+		for (currLine = scan.nextLine(); !currLine.equals(""); currLine = scan.nextLine()) {
+			currAcc = currLine.substring(0, currLine.indexOf('|'));
+			currLine = currLine.substring(currLine.indexOf('|') + 1);
+			currBalance = currLine.substring(0, currLine.indexOf('|'));
+			currLine = currLine.substring(currLine.indexOf('|') + 1);
+			currMinBalance = currLine.substring(0, currLine.indexOf('|'));
+			currLine = currLine.substring(currLine.indexOf('|') + 1);
+			switch (currLine) {
+			case "GOOD":
+				currStatus = AccountStatus.GOOD;
+			case "FREEZE":
+				currStatus = AccountStatus.FREEZE;
+			default:
+				currStatus = AccountStatus.INACTIVE;
+			}
+			Accounts.put(currAcc, new BankAccount(currAcc, Float.parseFloat(currBalance), Float.parseFloat(currMinBalance), currStatus));
+			currLine = scan.nextLine();
+			while (!(currLine.equals("|") || currLine.equals(""))) {
+				Accounts.get(currAcc).addUser(currLine.substring(0, currLine.indexOf('|')));
+				Users.get(currLine.substring(0, currLine.indexOf('|'))).addAccount(currAcc);
+				currLine = currLine.substring(currLine.indexOf('|'));
+			}
+		}
+		
+		for (File file : new File(workingDir).listFiles()) {
+			if (file.toString().charAt(file.toString().lastIndexOf('/') + 1) == 'l') {
+				currAcc = file.toString().substring(file.toString().lastIndexOf('g') + 1, file.toString().lastIndexOf('.'));
+				Logs.put(currAcc, new Vector<Log>());
+				inFile = new FileInputStream(file);
+				scan = new Scanner(inFile);
+				for (currLine = scan.nextLine(); !currLine.equals(""); currLine = scan.nextLine()) {
+					currUser = currLine.substring(0, currLine.indexOf('|'));
+					currLine = currLine.substring(currLine.indexOf('|') + 1);
+					currAction = currLine.substring(0, currLine.indexOf('|'));
+					currLine = currLine.substring(currLine.indexOf('|') + 1);
+					currAmount = currLine.substring(0, currLine.indexOf('|'));
+					currDate = currLine.substring(currLine.indexOf('|') + 1);
+					Logs.get(currAcc).add(new Log(currUser, currAction, currAmount, currDate, currAcc));
+				}
+			}
+		}
+	}
+	
+	private void saveData() throws IOException {
+		for (File file : new File(workingDir).listFiles()) {
+			file.delete(); // Surely this is a great idea for how to implement this with no flaws whatsoever
+		}
+		File newFile = new File(workingDir + "/users.txt");
+		newFile.createNewFile();
+		PrintWriter fileOut = new PrintWriter(newFile);
+		for (User user : Users.values()) {
+			fileOut.write(user.toString() + "\n");
+		}
+		newFile = new File(workingDir + "/accounts.txt");
+		newFile.createNewFile();
+		fileOut = new PrintWriter(newFile);
+		for (BankAccount account : Accounts.values()) {
+			fileOut.write(account.toString() + "\n");
+		}
+		for (String acc : Logs.keySet()) {
+			newFile = new File(workingDir + "/log" + acc + ".txt");
+			newFile.createNewFile();
+			fileOut = new PrintWriter(newFile);
+			for (Log log : Logs.get(acc)) {
+				fileOut.write(log.toString() + "\n");
+			}
+		}
 	}
 }
