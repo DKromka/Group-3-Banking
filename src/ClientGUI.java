@@ -127,15 +127,19 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 		
 	}
 	
-	private static Vector<String[]> loadAccountInfo(ObjectOutputStream outObj, ObjectInputStream inObj, String user) { 
-		
-		// STUB: This makes dummy data right now. This should handle the server communications to get info on each account of the
-		// client and store them in the result vector. Each element's [0] should be the account name, each [1] should be the
-		// balance, each [2] should be the state
+	private static Vector<String[]> loadAccountInfo(ObjectOutputStream outObj, ObjectInputStream inObj, String user) throws IOException, ClassNotFoundException { 
 		
 		Vector<String[]> result = new Vector<String[]>();
-		result.add(new String[] {"2626262", "45", "GOOD"});
-		result.add(new String[] {"scagonga", "57", "FROZEN"});
+		
+		Message message = new Message(MessageType.ACCOUNT_INFO, user);
+		
+		outObj.writeObject(message);
+		outObj.flush();
+		
+		message = (Message) inObj.readObject();
+		
+		result.add(new String[] {message.getData(), Float.toString(message.getFunds())});
+		
 		return result;
 	}
 	
@@ -170,11 +174,17 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 		case "refresh":
 			break;
 		case "Die":
-			logout();
-			break;
-		}
+			try {
+				logout();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		
-		accountInfo = loadAccountInfo(outObj, inObj, user);
+		try {
+			accountInfo = loadAccountInfo(outObj, inObj, user);
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private boolean deposit(String account, float amount) throws IOException, ClassNotFoundException {
