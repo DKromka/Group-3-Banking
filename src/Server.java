@@ -48,6 +48,7 @@ public class Server {
 					workingDir = fileselect.getSelectedFile().getParent().toString();
 					initData();
 					flag = true;
+					saveData();
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -448,7 +449,7 @@ public class Server {
 		Scanner scan;
 		String currAcc;
 		String currUser;
-		String currAmount;
+		String currAmount;	
 		String currDate;
 		String currAction;
 		String currMinBalance;
@@ -457,44 +458,53 @@ public class Server {
 		
 		File userFile = new File(workingDir + "/users.txt");
 		scan = new Scanner(userFile);
-		for (currLine = scan.nextLine(); !currLine.equals(""); currLine = scan.nextLine()) {
+		while (scan.hasNext()) {
+			currLine = scan.nextLine();
 			Users.put(currLine.substring(0, currLine.indexOf('|')), new User(currLine.substring(0, currLine.indexOf('|')), currLine.substring(currLine.indexOf('|') + 1, currLine.lastIndexOf('|')), currLine.charAt(currLine.length() - 1) == '1'));
 			// warning: do not try to read this
 		}
 		
 		File accFile = new File(workingDir + "/accounts.txt");
 		scan = new Scanner(accFile);
-		for (currLine = scan.nextLine(); !currLine.equals(""); currLine = scan.nextLine()) {
+		while (scan.hasNext()) {
+			currLine = scan.nextLine();
 			currAcc = currLine.substring(0, currLine.indexOf('|'));
 			currLine = currLine.substring(currLine.indexOf('|') + 1);
 			currBalance = currLine.substring(0, currLine.indexOf('|'));
 			currLine = currLine.substring(currLine.indexOf('|') + 1);
 			currMinBalance = currLine.substring(0, currLine.indexOf('|'));
 			currLine = currLine.substring(currLine.indexOf('|') + 1);
+			Logs.put(currAcc, new Vector<Log>());
 			switch (currLine) {
 			case "GOOD":
 				currStatus = AccountStatus.GOOD;
+				break;
 			case "FREEZE":
 				currStatus = AccountStatus.FREEZE;
+				break;
 			default:
 				currStatus = AccountStatus.INACTIVE;
 			}
 			Accounts.put(currAcc, new BankAccount(currAcc, Float.parseFloat(currBalance), Float.parseFloat(currMinBalance), currStatus));
 			currLine = scan.nextLine();
-			while (!(currLine.equals("|") || currLine.equals(""))) {
+			while (currLine.contains("|")) { // THIS REALLY SUCKS A TON BUT IT WORKS
 				Accounts.get(currAcc).addUser(currLine.substring(0, currLine.indexOf('|')));
 				Users.get(currLine.substring(0, currLine.indexOf('|'))).addAccount(currAcc);
-				currLine = currLine.substring(currLine.indexOf('|'));
+				currLine = currLine.substring(currLine.indexOf('|') + 1);
+			}
+			if (!currLine.equals("")) {
+				Accounts.get(currAcc).addUser(currLine);
+				Users.get(currLine).addAccount(currAcc);
 			}
 		}
 		
 		for (File file : new File(workingDir).listFiles()) {
 			if (file.toString().charAt(file.toString().lastIndexOf('/') + 1) == 'l') {
 				currAcc = file.toString().substring(file.toString().lastIndexOf('g') + 1, file.toString().lastIndexOf('.'));
-				Logs.put(currAcc, new Vector<Log>());
 				inFile = new FileInputStream(file);
 				scan = new Scanner(inFile);
-				for (currLine = scan.nextLine(); !currLine.equals(""); currLine = scan.nextLine()) {
+				while (scan.hasNext()) {
+					currLine = scan.nextLine();
 					currUser = currLine.substring(0, currLine.indexOf('|'));
 					currLine = currLine.substring(currLine.indexOf('|') + 1);
 					currAction = currLine.substring(0, currLine.indexOf('|'));
@@ -507,7 +517,7 @@ public class Server {
 		}
 	}
 	
-	private void saveData() throws IOException {
+	private static void saveData() throws IOException {
 		for (File file : new File(workingDir).listFiles()) {
 			file.delete(); // Surely this is a great idea for how to implement this with no flaws whatsoever
 		}
@@ -517,12 +527,14 @@ public class Server {
 		for (User user : Users.values()) {
 			fileOut.write(user.toString() + "\n");
 		}
+		fileOut.close();
 		newFile = new File(workingDir + "/accounts.txt");
 		newFile.createNewFile();
 		fileOut = new PrintWriter(newFile);
 		for (BankAccount account : Accounts.values()) {
 			fileOut.write(account.toString() + "\n");
 		}
+		fileOut.close();
 		for (String acc : Logs.keySet()) {
 			newFile = new File(workingDir + "/log" + acc + ".txt");
 			newFile.createNewFile();
@@ -530,6 +542,8 @@ public class Server {
 			for (Log log : Logs.get(acc)) {
 				fileOut.write(log.toString() + "\n");
 			}
+			fileOut.close();
 		}
+		
 	}
 }
