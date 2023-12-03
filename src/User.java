@@ -37,5 +37,9 @@ public class User {
 	public boolean removeAccount(String account) {
 		return accounts.remove(account);
 	}
+	
+	public String toString() {
+		return name + "|" + password + "|" + (teller ? "1" : "0");
+	}
 }
 	

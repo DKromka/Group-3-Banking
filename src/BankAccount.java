@@ -63,4 +63,20 @@ public class BankAccount {
 	public boolean hasUser(String user) {
 		return users.contains(user);
 	}
+	
+	public String toString() {
+		String result = name + "|" + Float.toString(balance) + "|" + Float.toString(minBalance) + "|";
+		switch (status) {
+		case GOOD:
+			result += "GOOD\n";
+		case FREEZE:
+			result += "FREEZE\n";
+		default:
+			result += "INACTIVE\n";
+		}
+		for (String user : users) {
+			result += user + "|";
+		}
+		return result;
+	}
 }
