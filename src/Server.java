@@ -5,7 +5,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.Date;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -228,7 +228,8 @@ public class Server {
 			
 			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
 			float funds = msg.getFunds();
-			Date date = new Date(100L);
+			
+			Date date = new Date();
 			Vector<Log> accountLogs = Logs.get(account.getName());
 			
 			if(account != null) { //if it exists
@@ -237,6 +238,7 @@ public class Server {
 					
 					if(account.deposit(funds)) {
 						msg = new Message(MessageType.SUCCESS,"Funds Deposited"); //deposit is successful
+						
 						Log log = new Log(currUser.getName(),"Deposit",funds,date,account.getName());
 						accountLogs.addElement(log);
 						Logs.put(account.getName(), accountLogs);
@@ -262,7 +264,7 @@ public class Server {
 			
 			float funds = msg.getFunds();
 			
-			Date date = new Date(100L);
+			Date date = new Date();
 			Vector<Log> accountLogs = Logs.get(account.getName());
 			
 			if(account != null) { //if it exists
@@ -271,8 +273,10 @@ public class Server {
 					
 					if(account.withdraw(funds)) {
 						msg = new Message(MessageType.SUCCESS,"Funds Withdrawn"); //withdraw is successful
+						
 		                Log log = new Log(currUser.getName(), "Withdrawal", funds, date, account.getName());
 		                accountLogs.addElement(log);
+		                Logs.put(account.getName(), accountLogs);
 					}
 					else{
 						msg = new Message(MessageType.FAIL,"Insufficient Funds"); //withdraw is unsuccessful
@@ -309,18 +313,22 @@ public class Server {
 		
 		private void handleAddUser()throws IOException{
 			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
+			
 			input = msg.getData().split("\n",2);
-			Date date = new Date(100L);
 			String accountName = input[0];
 			String user = input[1];
+			
+			Date date = new Date();
 			Vector<Log> accountLogs = Logs.get(account.getName());
 			//BankAccount account = Accounts.get(accountName);
 			
 			if(account != null) {
 				if(currAccount.addUser(user)) {
 					msg = new Message(MessageType.SUCCESS,"User " + user + " added to account " + accountName);
-	                Log log = new Log(currUser.getName(), "User Added", date, account.getName());
+	                
+					Log log = new Log(currUser.getName(), "User Added", date, account.getName());
 	                accountLogs.addElement(log);
+	                Logs.put(account.getName(), accountLogs);
 				}
 				else {
 					msg = new Message(MessageType.FAIL,"User already attached");
@@ -334,18 +342,22 @@ public class Server {
 		
 		private void handleRemoveUser() throws IOException{
 			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
+			
 			input = msg.getData().split("\n",2);
-			Date date = new Date(100L);
 			String accountName = input[0];
 			String user = input[1];
+			
+			Date date = new Date();
 			Vector<Log> accountLogs = Logs.get(account.getName());
 			//BankAccount account = Accounts.get(accountName);
 			 
 			if(account != null) {
 				if(account.removeUser(user)) {
 					msg = new Message(MessageType.SUCCESS,"User " + user + " removed from account " + accountName);
+					
 					Log log = new Log(currUser.getName(), "User Removed", date, account.getName());
 	                accountLogs.addElement(log);
+	                Logs.put(account.getName(), accountLogs);
 				}
 				else {
 					msg = new Message(MessageType.FAIL,"User not attached");
@@ -372,6 +384,10 @@ public class Server {
 			BankAccount fromAccount = Accounts.get(account1); //account funds withdrawn from
 			BankAccount toAccount = Accounts.get(account2); //account funds transfered to
 			
+			Date date = new Date();
+			Vector<Log> fromAccountLogs = Logs.get(account1);
+			Vector<Log> toAccountLogs = Logs.get(account2);
+			
 			if(fromAccount == null || toAccount == null) {
 				msg = (fromAccount == null) ?
 						(new Message(MessageType.FAIL,"Invalid account: " + account1)) :
@@ -381,6 +397,14 @@ public class Server {
 				if(fromAccount.withdraw(funds)) {
 					toAccount.deposit(funds);
 					msg = new Message(MessageType.SUCCESS,"Transfer Successful");
+					
+					Log log1 = new Log(currUser.getName(), "Transfer", date, account1);
+	                fromAccountLogs.addElement(log1);
+	                Logs.put(account1, fromAccountLogs);
+	                
+	                Log log2 = new Log(currUser.getName(), "Transfer", date, account2);
+	                fromAccountLogs.addElement(log2);
+	                Logs.put(account2, toAccountLogs);
 				}
 				else {
 					msg = new Message(MessageType.FAIL,"Insufficient Funds");
@@ -397,10 +421,10 @@ public class Server {
 			
 			String input = msg.getData();
 			
-			Vector<log> userLogs = Logs.get(input);
+			Vector<Log> userLogs = Logs.get(input);
 			
 			if(Logs.containsKey(input)) {
-				for (log x : userLogs) {
+				for (Log x : userLogs) {
 					logData = x.getUser() + "\n"+ x.getAction() + "\n" + x.getAmount() + "\n" + x.getDate();
 					msg = new Message(MessageType.LOG_INFO,logData);
 					out.writeObject(msg);
@@ -411,10 +435,6 @@ public class Server {
 				msg = new Message(MessageType.FAIL,"Invalid Account");
 			}
 			out.writeObject(msg);
-		}
-		
-		private void addLog(String action) {
-			
 		}
 	}
 	
