@@ -185,6 +185,7 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
 		}
+		}
 	}
 	
 	private boolean deposit(String account, float amount) throws IOException, ClassNotFoundException {
