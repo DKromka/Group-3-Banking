@@ -11,6 +11,7 @@ public class User {
 		name = n;
 		password = p;
 		teller = isTeller;
+		accounts = new Vector<String>();
 	}
 	
 	public String getName() {

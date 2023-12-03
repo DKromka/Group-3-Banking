@@ -13,6 +13,7 @@ public class BankAccount {
 		balance = initBalance;
 		this.minBalance = minBalance;
 		status = AccountStatus.GOOD;
+		users = new Vector<String>();
 	}
 	
 	public BankAccount(String name, float initBalance, float minBalance, AccountStatus status) {
@@ -20,6 +21,7 @@ public class BankAccount {
 		balance = initBalance;
 		this.minBalance = minBalance;
 		this.status = status;
+		users = new Vector<String>();
 	}
 	
 	public float getBalance() {
@@ -69,14 +71,17 @@ public class BankAccount {
 		switch (status) {
 		case GOOD:
 			result += "GOOD\n";
+			break;
 		case FREEZE:
 			result += "FREEZE\n";
+			break;
 		default:
 			result += "INACTIVE\n";
+			break;
 		}
 		for (String user : users) {
 			result += user + "|";
 		}
-		return result;
+		return result.substring(0, result.length() - 1);
 	}
 }
