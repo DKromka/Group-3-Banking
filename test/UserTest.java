@@ -1,7 +1,7 @@
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.Vector;
 import org.junit.jupiter.api.Test;
-class UserTest {
+public class UserTest {
 	
 	String name = "Naomin";
 	String pw = "12345";
@@ -13,6 +13,7 @@ class UserTest {
 	//new users to add
 	String newU = "Jack";
 	String newU2 = "Roy";
+	
 	@Test
 	public void addUserTest() {
 		assertTrue(u.addAccount(newU));

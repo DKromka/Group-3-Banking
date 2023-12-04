@@ -1,8 +1,9 @@
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.*;
 import org.junit.jupiter.api.Test;
-class BankAccountTest {
+public class BankAccountTest {
 	float balance = 100;
 	float minBalance = 0;
 	Vector<String> users = new Vector<String>();
@@ -13,41 +14,64 @@ class BankAccountTest {
 	
 	@Test
 	public void testing_get_name () {
+		try {
 		String expectedResult = name;
 		//not null
 		assertNotNull (ba.getName());
 		//compare expected result with actual result.
 		assertEquals (expectedResult,ba.getName());
+		} catch (Exception e) {
+            fail("Exception thrown: " + e.getMessage());
+        }
 	}
 	
 	@Test
 	public void testing_get_balance() {
+		try {
 		float er = balance;
 		assertEquals(balance, ba.getBalance(), er);
+		} catch (Exception e) {
+            fail("Exception thrown: " + e.getMessage());
+        }
 	}
 	
 	@Test
 	public void testing_get_Status() {
-		AccountStatus expectedResult = status;
-		assertEquals(expectedResult, ba.getStatus());
+		try {
+			AccountStatus expectedResult = status;
+			assertEquals(expectedResult, ba.getStatus());
+			
+		} catch (Exception e) {
+            fail("Exception thrown: " + e.getMessage());
+        }
+		
 	}
 	
 	@Test
 	public void deposit_more_money_test() {
+		try {
 		float depositAmount = 15;
 		//== true if money was deposited
 		assertTrue(ba.deposit(depositAmount));
+		} catch (Exception e) {
+            fail("Exception thrown: " + e.getMessage());
+        }
+		
 	}
 	
 	
 	@Test
 	public void add_user_test() {
+		try {
 		//add users to vector
 		String u1 = "Alex";
 		String u2 = "Jazmine";
 		
 		assertTrue(ba.addUser(u1));
 		assertTrue(ba.addUser(u2));
+		} catch (Exception e) {
+            fail("Exception thrown: " + e.getMessage());
+        }
 	
 	}
 	
