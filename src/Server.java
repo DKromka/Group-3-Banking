@@ -66,7 +66,7 @@ public class Server {
 
 		        // .accept blocks until an inbound connection on this port is attempted
 		        Socket client = server.accept();
-		        System.out.println("Connection from " + client.getInetAddress().getHostAddress());
+		        //System.out.println("Connection from " + client.getInetAddress().getHostAddress());
 		        
 		        ClientHandler clientSock = new ClientHandler(client);
 		        new Thread(clientSock).start();
@@ -130,18 +130,18 @@ public class Server {
 					
 					if(msg.getType().equals( MessageType.CONNECT_CLIENT)) {
 						
-						System.out.println("Client Connected");
+						System.out.println("Client Connected: " + clientSocket.getInetAddress().getHostAddress());
 						msg = new Message(MessageType.SUCCESS,"");
 						Teller = false;
 					}
 					else if(msg.getType().equals( MessageType.CONNECT_TELLER)) {
 			
-						System.out.println("Teller Connected");
+						System.out.println("Teller Connected: " + clientSocket.getInetAddress().getHostAddress());
 						msg = new Message(MessageType.SUCCESS,"");
 						Teller = true;
 					}
 					else {
-						System.out.println("Unidentified Device. Terminating Connection");
+						System.out.println("Unidentified Device: " + clientSocket.getInetAddress().getHostAddress() + "\nTerminating Connection.");
 						clientSocket.close();
 					}
 					
