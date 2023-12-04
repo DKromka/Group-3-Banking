@@ -182,6 +182,7 @@ public class Server {
 									break;
 								case ACCOUNT_INFO:
 									handleAccountInfo();
+									break;
 								// Add more cases for other message types
 								default:
 									// Handle unknown message types
