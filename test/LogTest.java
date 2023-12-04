@@ -4,23 +4,15 @@ import java.util.Date;
 import org.junit.Before;
 import org.junit.jupiter.api.Test;
 public class LogTest {
-	
-	String name,type,Acc;
-	float amount;
-	Date date;
-	//create a log
-	Log info;
-	
-	@Before
-	public void setup() {
-		String name = "Jhon";
+
+	String name = "Jhon";
 		String type = "Deposit";
 		float amount = 200;
 		Date date = new Date();
 		String Acc = "1";
 		//create a log
-		info = new Log (name, type, amount, date, Acc);
-	}
+		Log info = new Log (name, type, amount, date, Acc);
+
 	
 	@Test
 	public void test_check_Values_Not_Null() {

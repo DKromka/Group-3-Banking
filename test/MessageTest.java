@@ -1,16 +1,22 @@
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.Date;
+
+import org.junit.Before;
 import org.junit.jupiter.api.Test;
-public class MessageTest {
+public class MessageTest {	
+	
 	MessageType t = MessageType.LOGIN_REQ;
 	//user/amount/date
 	Date date = new Date();
-	String d = "Marc" + "2000" + date;
+	String data = "Marc" + "2000" + date;
 	float f = 500;
 	//make a message
-	Message m = new Message (t, d, f);
+	Message m = new Message (t, data, f);
+
+
+	
 	@Test
-	void values_get_assigned() {
+	public void values_get_assigned() {
 		//check if values are not null as well as check expected result
 		assertNotNull (m.getData());
 		assertNotNull (m.getID());
@@ -23,13 +29,13 @@ public class MessageTest {
 	public void test_getters() {
 		assertEquals(m.getFunds(), f);
 		assertEquals(m.getType(), t);
-		assertEquals(m.getID(), "1");
+		assertEquals(m.getID(), 1);
 	}
 	
 	@Test
 	public void test_data_returned() {
 		//is correct data returned?
-		String expectedData = d + f;
+		String expectedData = data + f + date;
 		assertNotNull (m.getData());
 		assertEquals(m.getData(), expectedData);
 		
