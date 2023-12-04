@@ -301,6 +301,7 @@ public class Server {
 			
 			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
 			float funds = msg.getFunds();
+			
 			Date date = new Date();
 			Vector<Log> accountLogs = Logs.get(account.getName());
 			
@@ -309,13 +310,14 @@ public class Server {
 				if(Teller || account.hasUser(currUser.getName())) { //check if user has permission to access account
 					
 					if(account.deposit(funds)) {
-						msg = new Message(MessageType.SUCCESS,"Funds Deposited"); //withdraw is successful
+						msg = new Message(MessageType.SUCCESS,"Funds Deposited"); //deposit is successful
+						
 						Log log = new Log(currUser.getName(),"Deposit",funds,date,account.getName());
 						accountLogs.addElement(log);
 						Logs.put(account.getName(), accountLogs);
 					}
 					else{
-						msg = new Message(MessageType.FAIL,"Insufficient Funds"); //withdraw is unsuccessful
+						msg = new Message(MessageType.FAIL,"Insufficient Funds"); //deposit is unsuccessful
 					}
 				}
 				else {
@@ -334,6 +336,9 @@ public class Server {
 			
 			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
 			
+			Date date = new Date();
+			Vector<Log> accountLogs = Logs.get(account.getName());
+			
 			float funds = msg.getFunds();
 			
 			if(account != null) { //if it exists
@@ -341,9 +346,11 @@ public class Server {
 				if(Teller || account.hasUser(currUser.getName())) { //check if user has permission to access account
 					
 					if(account.withdraw(funds)) {
-						System.out.println("Withdrawn.");
-						System.out.println(account.toString());
-						msg = new Message(MessageType.SUCCESS,"Funds Withdrawn"); //withdraw is successful
+						msg = new Message(MessageType.SUCCESS,"Funds Withdrawn");
+						
+						Log log = new Log(currUser.getName(),"Withdraw",funds,date,account.getName());
+						accountLogs.addElement(log);
+						Logs.put(account.getName(), accountLogs);//withdraw is successful
 					}
 					else{
 						msg = new Message(MessageType.FAIL,"Insufficient Funds"); //withdraw is unsuccessful
@@ -391,9 +398,16 @@ public class Server {
 			
 			BankAccount account = Accounts.get(accountName);
 			
+			Date date = new Date();
+			Vector<Log> accountLogs = Logs.get(account.getName());
+			
 			if(account != null) {
 				if(currAccount.addUser(user)) {
 					msg = new Message(MessageType.SUCCESS,"User " + user + " added to account " + accountName);
+					
+					Log log = new Log(currUser.getName(),"Added User",-1,date,account.getName());
+					accountLogs.addElement(log);
+					Logs.put(account.getName(), accountLogs);
 				}
 				else {
 					msg = new Message(MessageType.FAIL,"User already attached");
@@ -413,10 +427,17 @@ public class Server {
 			String user = input[1];
 			
 			BankAccount account = Accounts.get(accountName);
+			
+			Date date = new Date();
+			Vector<Log> accountLogs = Logs.get(account.getName());
 			 
 			if(account != null) {
 				if(account.removeUser(user)) {
 					msg = new Message(MessageType.SUCCESS,"User " + user + " removed from account " + accountName);
+					
+					Log log = new Log(currUser.getName(),"Added User",-1,date,account.getName());
+					accountLogs.addElement(log);
+					Logs.put(account.getName(), accountLogs);
 				}
 				else {
 					msg = new Message(MessageType.FAIL,"User not attached");
@@ -444,6 +465,11 @@ public class Server {
 			BankAccount fromAccount = Accounts.get(account1); //account funds withdrawn from
 			BankAccount toAccount = Accounts.get(account2); //account funds transfered to
 			
+			Date date1 = new Date();
+			Date date2 = new Date();
+			Vector<Log> accountLogs1 = Logs.get(fromAccount.getName());
+			Vector<Log> accountLogs2 = Logs.get(toAccount.getName());
+			
 			if(fromAccount == null || toAccount == null) {
 				msg = (fromAccount == null) ?
 						(new Message(MessageType.FAIL,"Invalid account: " + account1)) :
@@ -453,6 +479,15 @@ public class Server {
 				if(fromAccount.withdraw(funds)) {
 					toAccount.deposit(funds);
 					msg = new Message(MessageType.SUCCESS,"Transfer Successful");
+					
+					Log log1 = new Log(currUser.getName(),"Transfer (-)",funds,date1,fromAccount.getName());
+					accountLogs1.addElement(log1);
+					Logs.put(fromAccount.getName(), accountLogs1);
+					
+					Log log1 = new Log(currUser.getName(),"Transfer (+)",funds,date1,toAccount.getName());
+					accountLogs1.addElement(log1);
+					Logs.put(fromAccount.getName(), accountLogs1);
+					
 				}
 				else {
 					msg = new Message(MessageType.FAIL,"Insufficient Funds");
