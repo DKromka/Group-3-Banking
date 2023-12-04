@@ -42,5 +42,9 @@ public class User {
 	public String toString() {
 		return name + "|" + password + "|" + (teller ? "1" : "0");
 	}
+	
+	public Vector<String> getAccounts(){
+		return accounts;
+	}
 }
 	
