@@ -1,31 +1,53 @@
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.Date;
+
+import org.junit.Before;
 import org.junit.jupiter.api.Test;
 public class LogTest {
-	String name = "Jhon";
-	String type = "deposit";
-	float amount = 200;
-	Date date = new Date();
-	String Acc = "1";
+	
+	String name,type,Acc;
+	float amount;
+	Date date;
 	//create a log
 	Log info = new Log (name, type, amount, date, Acc);
 	
-	@Test
-	public void checkValuesNotNull() {
-		assertNotNull(info.getAccount());
-		assertNotNull(info.getAccount());
-		assertNotNull(info.getUser());
+	@Before
+	public void setup() {
+		String name = "Jhon";
+		String type = "Deposit";
+		float amount = 200;
+		Date date = new Date();
+		String Acc = "1";
+		//create a log
+		Log info = new Log (name, type, amount, date, Acc);
 	}
 	
-	public void Get_user_information() {
+	@Test
+	public void test_check_Values_Not_Null() {
+		assertNotNull(info.getUser());
+		assertNotNull(info.getAction());
+		assertNotNull(info.getAmount());
+		assertNotNull(info.getDate());
+		assertNotNull(info.getAccount());
+	}
+	
+	public void test_Get_user_information() {
 		assertEquals(name, info.getUser());
 		assertEquals(Acc, info.getAccount());
 	}
 	
-	public void info_to_be_logged () {
-		assertEquals(type, info.getAction());
-		assertEquals(date, info.getDate());
-		
+	public void testGetAction() {
+		assertEquals(type,info.getAction());
+	}
+	
+	public void test_Get_Amount() {
+		assertEquals("200",info.getAmount());
+		assertNotEquals(amount,info.getAmount());	
+	}
+	
+	public void test_Get_Date() {
+		assertEquals(date.toString(),info.getDate());
+		assertNotEquals(date,info.getDate());
 	}
 }
 
