@@ -17,6 +17,7 @@ import java.util.Vector;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+
 import javax.swing.filechooser.*;
 
 public class Server {
@@ -30,6 +31,16 @@ public class Server {
 	static private String workingDir;
 	
 	public static void main(String[] args) {
+		
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			public void run() {
+				try {
+					saveData();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}));
 		
 		Users = new HashMap<String,User>();
 		Accounts = new HashMap<String,BankAccount>();
@@ -67,8 +78,7 @@ public class Server {
 		        // .accept blocks until an inbound connection on this port is attempted
 		        Socket client = server.accept();
 		        //System.out.println("Connection from " + client.getInetAddress().getHostAddress());
-				System.out.println("Connected from: " + client.getInetAddress().getHostAddress());
-				
+		        
 		        ClientHandler clientSock = new ClientHandler(client);
 		        new Thread(clientSock).start();
 			}
@@ -331,6 +341,8 @@ public class Server {
 				if(account.hasUser(currUser.getName())) { //check if user has permission to access account
 					
 					if(account.withdraw(funds)) {
+						System.out.println("Withdrawn.");
+						System.out.println(account.toString());
 						msg = new Message(MessageType.SUCCESS,"Funds Withdrawn"); //withdraw is successful
 					}
 					else{

@@ -1,5 +1,5 @@
 import java.awt.HeadlessException;
-import java.awt.event.ActionEvent;
+	import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -189,22 +189,34 @@ public class TellerGUI implements ActionListener {
 		outObj.writeObject(message);
 		outObj.flush();
 		
+		String user;
+		String action;
+		String amount;
+		String date;
+		String currData;
+		
 		message = (Message) inObj.readObject();
 		
-		if (message.getType().equals(MessageType.SUCCESS)) {
-			
-			Log inLog = (Log) inObj.readObject();
-			
-			currLogs.add(new String[] {inLog.getUser(), inLog.getAction(), inLog.getAmount(), inLog.getDate()});
-			
-			return true;
-			
-		} else {
-			
+		if (message.getType() == MessageType.FAIL) {
 			return false;
-			
 		}
-
+		
+		while (message.getType() != MessageType.DONE) {
+			
+			currData = message.getData();
+			
+			user = currData.substring(0, currData.indexOf('\n'));
+			currData = currData.substring(currData.indexOf('\n') + 1);
+			action = currData.substring(0, currData.indexOf('\n'));
+			currData = currData.substring(currData.indexOf('\n') + 1);
+			amount = currData.substring(0, currData.indexOf('\n'));
+			date = currData.substring(currData.indexOf('\n') + 1);
+			
+			currLogs.add(new String[] {user, action, amount, date});
+			
+			message = (Message) inObj.readObject();
+		}
+		return true;
 	}
 	
 	private boolean deposit(float amount) throws IOException, ClassNotFoundException {

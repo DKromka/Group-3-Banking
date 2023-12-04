@@ -60,6 +60,8 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 		
 		accountInfo = loadAccountInfo(outObj, inObj, user);
 		
+		System.out.println("we made it baby");
+		
 		list = new JList<String>();
 		listPane = new JScrollPane(list);
 		list.addListSelectionListener(this);
@@ -135,10 +137,15 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 		
 		outObj.writeObject(message);
 		outObj.flush();
-
+		
+		System.out.println("sent obj");
+		
 		message = (Message) inObj.readObject();
 		
+		System.out.println("read obj");
+		
 		while (!(message.getType() == MessageType.DONE)) {
+			System.out.println("got something that isn't done");
 			result.add(new String[] {message.getData().substring(0, message.getData().indexOf('\n')), Float.toString(message.getFunds()), message.getData().substring(message.getData().indexOf('\n') + 1)});
 			message = (Message) inObj.readObject();
 		}
@@ -182,12 +189,12 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		
+		}
 		try {
 			accountInfo = loadAccountInfo(outObj, inObj, user);
+			
 		} catch (ClassNotFoundException | IOException e) {
 			e.printStackTrace();
-		}
 		}
 	}
 	
@@ -206,6 +213,7 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 			
 		} else {
 			
+			System.out.println(message.getData());
 			return false;
 		}
 				
