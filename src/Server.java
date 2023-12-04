@@ -306,7 +306,7 @@ public class Server {
 			
 			if(account != null) { //if it exists
 				
-				if(account.hasUser(currUser.getName())) { //check if user has permission to access account
+				if(Teller || account.hasUser(currUser.getName())) { //check if user has permission to access account
 					
 					if(account.deposit(funds)) {
 						msg = new Message(MessageType.SUCCESS,"Funds Deposited"); //withdraw is successful
@@ -338,7 +338,7 @@ public class Server {
 			
 			if(account != null) { //if it exists
 				
-				if(account.hasUser(currUser.getName())) { //check if user has permission to access account
+				if(Teller || account.hasUser(currUser.getName())) { //check if user has permission to access account
 					
 					if(account.withdraw(funds)) {
 						System.out.println("Withdrawn.");

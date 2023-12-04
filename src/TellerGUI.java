@@ -8,7 +8,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 import java.util.Vector;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -30,6 +29,7 @@ public class TellerGUI implements ActionListener {
 	private JTable logTable;
 	private JScrollPane tablePane;
 	private JPanel buttonPane;
+	private MyTableModel currModel;
 	
 	private class MyTableModel extends AbstractTableModel {
 		private static final long serialVersionUID = 1L;
@@ -54,6 +54,9 @@ public class TellerGUI implements ActionListener {
 			default:
 				return "Date";
 			}
+		}
+		public void refresh() {
+			fireTableDataChanged();
 		}
 		public int getColumnCount() {return 4;}
 		public int getRowCount() {return currLogs.size();}
@@ -92,7 +95,8 @@ public class TellerGUI implements ActionListener {
 			
 			currLogs = new Vector<String[]>();
 			
-			logTable = new JTable(new MyTableModel());
+			currModel = new MyTableModel();
+			logTable = new JTable(currModel);
 			logTable.setOpaque(true);
 			tablePane = new JScrollPane(logTable);
 			buttonPane = new JPanel();	
@@ -230,10 +234,13 @@ public class TellerGUI implements ActionListener {
 		
 		if (message.getType().equals(MessageType.SUCCESS)) {
 			
+			System.out.println("dope");
 			return true;
+			
 			
 		} else {
 			
+			System.out.println(message.getData());
 			return false;
 		}
 				
@@ -426,9 +433,18 @@ public class TellerGUI implements ActionListener {
 	}
 	
 	public void refresh() throws ClassNotFoundException, IOException {
+		for (String[] logList : currLogs) {
+			for (String log : logList) {
+				System.out.println(log);
+			}
+		}
+		System.out.println("DIVIDER");
 		getLogs();
-		tablePane.remove(logTable);
-		logTable = new JTable(new MyTableModel());
-		tablePane.add(logTable);
+		for (String[] logList : currLogs) {
+			for (String log : logList) {
+				System.out.println(log);
+			}
+		}
+		currModel.refresh();
 	}
 }
