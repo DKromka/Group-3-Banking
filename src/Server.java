@@ -485,8 +485,8 @@ public class Server {
 					Logs.put(fromAccount.getName(), accountLogs1);
 					
 					Log log2 = new Log(currUser.getName(),"Transfer (+)",funds,date1,toAccount.getName());
-					accountLogs1.addElement(log1);
-					Logs.put(fromAccount.getName(), accountLogs1);
+					accountLogs2.addElement(log2);
+					Logs.put(toAccount.getName(), accountLogs2);
 					
 				}
 				else {
