@@ -204,6 +204,7 @@ public class Server {
 									break;
 								case USER_INFO_REQ:
 									handleUserInfo();
+									break;
 								case ACCOUNT_INFO:
 									handleAccountInfo();
 									break;
@@ -290,7 +291,7 @@ public class Server {
 			
 			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
 			float funds = msg.getFunds();
-			Date date = new Date(100L);
+			Date date = new Date();
 			Vector<Log> accountLogs = Logs.get(account.getName());
 			
 			if(account != null) { //if it exists
