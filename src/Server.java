@@ -175,7 +175,7 @@ public class Server {
 									handleTransfer();
 									break;
 								case USER_INFO_REQ:
-									handleAccountInfoReq();
+									handleUserInfo();
 									break;
 								case LOGS_REQ:
 									handleLogRequest();
@@ -201,7 +201,9 @@ public class Server {
 									handleWithdraw();
 									break;
 								case USER_INFO_REQ:
-									handleAccountInfoReq();
+									handleUserInfo();
+								case ACCOUNT_INFO:
+									handleAccountInfo();
 									break;
 								// Add more cases for other message types
 								default:
@@ -344,7 +346,7 @@ public class Server {
 			out.flush();
 		}
 		
-		private void handleAccountInfoReq() throws IOException{
+		private void handleUserInfo() throws IOException{
 			
 			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
 			
