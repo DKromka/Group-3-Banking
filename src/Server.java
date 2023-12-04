@@ -10,7 +10,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.Date;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Vector;
