@@ -126,6 +126,28 @@ public class Server {
 			try {
 				if(!loggedIN) {
 					
+					msg = (Message)in.readObject();
+					
+					if(msg.getType().equals( MessageType.CONNECT_CLIENT)) {
+						
+						System.out.println("Client Connected");
+						msg = new Message(MessageType.SUCCESS,"");
+						Teller = false;
+					}
+					else if(msg.getType().equals( MessageType.CONNECT_TELLER)) {
+			
+						System.out.println("Teller Connected");
+						msg = new Message(MessageType.SUCCESS,"");
+						Teller = true;
+					}
+					else {
+						System.out.println("Unidentified Device. Terminating Connection");
+						clientSocket.close();
+					}
+					
+					out.writeObject(msg);
+					out.flush();
+					
 					verifyLogin();
 					
 					while(loggedIN) {
@@ -158,6 +180,8 @@ public class Server {
 								case LOGS_REQ:
 									handleLogRequest();
 									break;
+								case ACCOUNT_INFO:
+									handleAccountInfo();
 								// Add more cases for other message types
 								default:
 									// Handle unknown message types
@@ -214,6 +238,7 @@ public class Server {
 			while(!loggedIN) {
 				try {
 					msg = (Message)in.readObject();
+										
 					if(msg.type == MessageType.LOGIN_REQ) {
 												
 						input = msg.getData().split("\n",2); //parse data string from message object
@@ -242,6 +267,7 @@ public class Server {
 						break;
 					}
 					out.writeObject(msg);
+					out.flush();
 				}
 				catch (IOException | ClassNotFoundException e) {
 				e.printStackTrace();
@@ -286,6 +312,7 @@ public class Server {
 			}
 			
 			out.writeObject(msg);
+			out.flush();
 		}
 		
 		private void handleWithdraw() throws IOException {
@@ -314,6 +341,7 @@ public class Server {
 			}
 			
 			out.writeObject(msg);
+			out.flush();
 		}
 		
 		private void handleAccountInfoReq() throws IOException{
@@ -332,6 +360,7 @@ public class Server {
 				msg = new Message(MessageType.FAIL,"Invalid Acount");
 			}
 			out.writeObject(msg);
+			out.flush();
 		}
 		
 		private void handleAddUser()throws IOException{
@@ -413,10 +442,7 @@ public class Server {
 		}
 		
 		private void handleLogRequest() throws IOException {
-			String user = null;
-			String action = null;
-			String date = null;
-			float amount = -1;
+
 			String logData;
 			
 			String input = msg.getData();
@@ -435,10 +461,21 @@ public class Server {
 				msg = new Message(MessageType.FAIL,"Invalid Account");
 			}
 			out.writeObject(msg);
+			out.flush();
 		}
 		
-		private void addLog(String action) {
+		private void handleAccountInfo() throws IOException{
+			String user = msg.getData();
+			BankAccount account = Accounts.get(user);
 			
+			if(account != null) {
+				String data = account.getName() + "\n" + account.getStatus();
+				msg = new Message(MessageType.ACCOUNT_INFO,data,account.getBalance());
+			}
+			else {
+				msg = new Message(MessageType.FAIL,"Account Not Found");
+			}
+			out.writeObject(msg);
 		}
 	}
 	
