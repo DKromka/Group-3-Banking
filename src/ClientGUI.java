@@ -131,7 +131,7 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 		
 		Vector<String[]> result = new Vector<String[]>();
 		
-		Message message = new Message(MessageType.ACCOUNT_INFO_REQ, user);
+		Message message = new Message(MessageType.USER_INFO_REQ, user);
 		
 		outObj.writeObject(message);
 		outObj.flush();
