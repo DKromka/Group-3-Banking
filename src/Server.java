@@ -501,7 +501,17 @@ public class Server {
 		scan = new Scanner(userFile);
 		while (scan.hasNext()) {
 			currLine = scan.nextLine();
-			Users.put(currLine.substring(0, currLine.indexOf('|')), new User(currLine.substring(0, currLine.indexOf('|')), currLine.substring(currLine.indexOf('|') + 1, currLine.lastIndexOf('|')), currLine.charAt(currLine.length() - 1) == '1'));
+			Users.put(
+					//key
+					currLine.substring(0, currLine.indexOf('|')),
+					//hashed object
+					new User(
+							currLine.substring(0, currLine.indexOf('|')), //username
+							currLine.substring(currLine.indexOf('|') + 1, //password
+							currLine.lastIndexOf('|')),
+							currLine.charAt(currLine.length() - 1) == '1' //teller flag
+							)
+					);
 			// warning: do not try to read this
 		}
 		
