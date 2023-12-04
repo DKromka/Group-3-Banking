@@ -135,13 +135,12 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 		
 		outObj.writeObject(message);
 		outObj.flush();
+
+		message = (Message) inObj.readObject();
 		
-		while(!message.getType().equals(MessageType.DONE)) {
-			
-			message = (Message) inObj.readObject();
-			
+		while (!(message.getType() == MessageType.DONE)) {
 			result.add(new String[] {message.getData(), Float.toString(message.getFunds())});
-			
+			message = (Message) inObj.readObject();
 		}
 		
 		return result;
