@@ -67,7 +67,8 @@ public class Server {
 		        // .accept blocks until an inbound connection on this port is attempted
 		        Socket client = server.accept();
 		        //System.out.println("Connection from " + client.getInetAddress().getHostAddress());
-		        
+				System.out.println("Connected from: " + client.getInetAddress().getHostAddress());
+				
 		        ClientHandler clientSock = new ClientHandler(client);
 		        new Thread(clientSock).start();
 			}
