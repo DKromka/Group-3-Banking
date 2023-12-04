@@ -184,7 +184,7 @@ public class TellerGUI implements ActionListener {
 		
 		currLogs.clear();
 		
-		Message message = new Message(MessageType.LOG_INFO, currAccount);
+		Message message = new Message(MessageType.LOGS_REQ, currAccount);
 		
 		outObj.writeObject(message);
 		outObj.flush();
