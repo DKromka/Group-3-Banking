@@ -139,7 +139,7 @@ public class ClientGUI implements ListSelectionListener, ActionListener {
 		message = (Message) inObj.readObject();
 		
 		while (!(message.getType() == MessageType.DONE)) {
-			result.add(new String[] {message.getData(), Float.toString(message.getFunds())});
+			result.add(new String[] {message.getData().substring(0, message.getData().indexOf('\n')), Float.toString(message.getFunds()), message.getData().substring(message.getData().indexOf('\n') + 1)});
 			message = (Message) inObj.readObject();
 		}
 		
