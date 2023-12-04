@@ -349,19 +349,21 @@ public class Server {
 		
 		private void handleUserInfo() throws IOException{
 			
-			BankAccount account = Accounts.get(msg.getData()); //grabs account from hash
+			Vector<String> accounts = currUser.getAccounts();
+			BankAccount currAccount;
 			
-			if(account != null) { //check if it exists
-				if(account.hasUser(currUser.getName())) { //checks if user has permission to access account
-					msg = new Message(MessageType.ACCOUNT_INFO,account.getName() + "\n" + account.getStatus(),account.getBalance());
-				}
-				else {
-					msg = new Message(MessageType.FAIL,"Acccess Denied");
+			for(String x : accounts) {
+				currAccount = Accounts.get(x);
+				if(currAccount != null) {
+					if(currAccount.hasUser(currUser.getName())) {
+						msg = new Message(MessageType.ACCOUNT_INFO,currAccount.getName() + "\n" + currAccount.getStatus(),currAccount.getBalance());
+						out.writeObject(msg);
+						out.flush();
+					}
 				}
 			}
-			else {
-				msg = new Message(MessageType.FAIL,"Invalid Acount");
-			}
+			
+			msg = new Message(MessageType.DONE,"");
 			out.writeObject(msg);
 			out.flush();
 		}
@@ -583,6 +585,5 @@ public class Server {
 			}
 			fileOut.close();
 		}
-		
 	}
 }
