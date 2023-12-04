@@ -9,7 +9,7 @@ public class LogTest {
 	float amount;
 	Date date;
 	//create a log
-	Log info = new Log (name, type, amount, date, Acc);
+	Log info;
 	
 	@Before
 	public void setup() {
@@ -19,7 +19,7 @@ public class LogTest {
 		Date date = new Date();
 		String Acc = "1";
 		//create a log
-		Log info = new Log (name, type, amount, date, Acc);
+		info = new Log (name, type, amount, date, Acc);
 	}
 	
 	@Test
