@@ -294,6 +294,7 @@ public class Server {
 		private void handleLogout() throws IOException {
 			msg = new Message(MessageType.LOGOUT,"User Logged Out");
 			out.writeObject(msg);
+			out.flush();
 			loggedIN = false;
 		}
 		
@@ -417,6 +418,7 @@ public class Server {
 				msg = new Message(MessageType.FAIL,"Invalid Acount");
 			}
 			out.writeObject(msg);
+			out.flush();
 		}
 		
 		private void handleRemoveUser() throws IOException{
@@ -448,6 +450,7 @@ public class Server {
 			}
 			
 			out.writeObject(msg);
+			out.flush();
 		}
 		
 		private void handleTransfer() throws IOException{
@@ -494,6 +497,7 @@ public class Server {
 				}
 			}
 			out.writeObject(msg);
+			out.flush();
 		}
 		
 		private void handleLogRequest() throws IOException {
@@ -509,6 +513,7 @@ public class Server {
 					logData = x.getUser() + "\n"+ x.getAction() + "\n" + x.getAmount() + "\n" + x.getDate();
 					msg = new Message(MessageType.LOG_INFO,logData);
 					out.writeObject(msg);
+					out.flush();
 		        }
 				msg = new Message(MessageType.DONE,"");
 			}
@@ -531,6 +536,7 @@ public class Server {
 				msg = new Message(MessageType.FAIL,"Account Not Found");
 			}
 			out.writeObject(msg);
+			out.flush();
 		}
 	}
 	
