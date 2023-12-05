@@ -450,7 +450,7 @@ public class Server {
 			out.writeObject(msg);
 		}
 		
-		private void handleTransfer(){
+		private void handleTransfer() throws IOException{
 			
 			input = msg.getData().split("\n",2);
 			/* 
@@ -493,6 +493,7 @@ public class Server {
 					msg = new Message(MessageType.FAIL,"Insufficient Funds");
 				}
 			}
+			out.writeObject(msg);
 		}
 		
 		private void handleLogRequest() throws IOException {
