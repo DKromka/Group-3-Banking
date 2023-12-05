@@ -348,10 +348,24 @@ public class TellerGUI implements ActionListener {
 
 	}
 	
+	public boolean transfer(String acc, float amount) throws IOException, ClassNotFoundException {
+		
+		Message message = new Message(MessageType.TRANSFER, currAccount + "\n" + acc, amount);
+		
+		outObj.writeObject(message);
+		outObj.flush();
+		
+		message = (Message) inObj.readObject();
+		
+		System.out.println("read");
+		
+		return message.getType() != MessageType.FAIL;
+	}
+	
 	public void actionPerformed(ActionEvent event) {
 		switch (event.getActionCommand()) {
 		case "deposit":
-			float depositAmount;
+				float depositAmount;
 			try {
 				depositAmount = Float.parseFloat(JOptionPane.showInputDialog("How much to deposit to " + currAccount));
 			}
@@ -381,6 +395,28 @@ public class TellerGUI implements ActionListener {
 			}
 			try {
 				withdraw(withdrawAmount);
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				refresh();
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
+			return;
+		case "transfer":
+			float transferAmount;
+			String acc2;
+			try {
+				acc2 = JOptionPane.showInputDialog("Which account to transfer to?");
+				transferAmount = Float.parseFloat(JOptionPane.showInputDialog("How much to withdraw from " + currAccount + " and deposit to " + acc2 + "?"));
+			}
+			catch (Exception e) {
+				JOptionPane.showMessageDialog(null, "Invalid amount", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			try {
+				transfer(acc2, transferAmount);
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}
