@@ -41,13 +41,13 @@ public class BankAccount {
 	}
 	
 	public boolean deposit(float amount) {
-		if (amount <= 0) {return false;}
+		if (amount <= 0 || status != AccountStatus.GOOD) {return false;}
 		balance += amount;
 		return true;
 	}
 	
 	public boolean withdraw(float amount) {
-		if (amount <= 0 || balance - amount < minBalance) {return false;}
+		if (amount <= 0 || balance - amount < minBalance || status != AccountStatus.GOOD) {return false;}
 		balance -= amount;
 		return true;
 	}
